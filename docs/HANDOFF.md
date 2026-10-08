@@ -19,11 +19,11 @@ Repository: `C:\Users\BharathChintalapani\Documents\Repos\NanditaHandlooms`. Kee
 - Local Git repository with source checkpoint `ee213d6`. No Git remote was configured and nothing was uploaded at that checkpoint. Documentation added afterward may be uncommitted; inspect current status.
 - Validation at that checkpoint: API/tools builds and publish succeeded, 24 C# security/validation/SQL checks passed, financial regression tests passed against the cloud UI, desktop/mobile UI checks passed, and Bicep/conformance checks passed.
 
-**Azure resources and code are deployed; owner access verification is in progress.** The owner explicitly approved deployment after documentation. The HTTPS homepage and integrated API health return 200; unauthenticated data access and forged owner headers return 401. SQL schema, restricted user, full-payload source import, restricted grants, transactional rollback and stale-revision rejection were verified. The temporary operator firewall rule was removed. The source ledger remains intact.
+**Azure is deployed and owner inventory access is confirmed.** The owner explicitly approved deployment after documentation. The HTTPS homepage and integrated API health return 200; unauthenticated data access and forged owner headers return 401. SQL schema, restricted user, full-payload source import, restricted grants, transactional rollback and stale-revision rejection were verified. The temporary operator firewall rule was removed. The source ledger remains intact.
 
 Website: https://gray-grass-0cab2cd10.6.azurestaticapps.net/
 
-The first invitation was rejected because the browser signed in as the owner's Aya work account rather than the intended personal Microsoft account. Personal sign-in subsequently reached the app but owner-role verification is still pending. Keep the configured personal-owner email restriction; do not authorize the work identity to bypass that error. The local/cloud active-ledger decision is pending verification.
+The first invitation was rejected because the browser signed in as the owner's Aya work account rather than the intended personal Microsoft account. Regular personal sign-in had only default roles and was correctly denied. A role-update CLI success response was insufficient proof of access. The owner accepted a fresh invitation in the personal browser and confirmed that inventory loads successfully. Authentication and owner email/role checks stayed intact; no security controls or application code were relaxed. Azure's CLI user list continued returning empty immediately after this confirmation, so authenticated app access is the successful evidence rather than a claim of verified CLI listing. Use the cloud ledger for online changes; the local ledger remains a separate backup/copy with no automatic synchronization.
 
 ## Architecture and code map
 
@@ -81,7 +81,7 @@ No standalone Functions host, Key Vault, storage account, managed identity, or p
 
 ## Deployment handoff and remaining work
 
-Active session ID: `cbbfbb70-26b5-4ef5-9676-9e0ebc0213e3`, under `.copilot-azure/sessions/`. The active pointer, context, prepare plan, scaffold manifest, review, deploy checklist, final deployment result, audit and summary are private and Git-ignored. The deployment attempt is recorded as a partial handoff: resources/code and SQL import succeeded, but refreshed personal-owner API access remains unverified. Resume that authorization check before treating the app as fully usable; do not provision replacement resources. These artifacts exist on this computer but will not be present in a fresh clone.
+Active session ID: `cbbfbb70-26b5-4ef5-9676-9e0ebc0213e3`, under `.copilot-azure/sessions/`. The active pointer, context, prepare plan, scaffold manifest, review, deploy checklist, final deployment result, audit and summary are private and Git-ignored. Resources/code, SQL import and owner inventory access succeeded. The original partial handoff was resolved by invitation acceptance. These artifacts exist on this computer but will not be present in a fresh clone.
 
 The applied skill is `C:\Users\BharathChintalapani\.agents\skills\azure-app-onboard\SKILL.md`. For deployment, read its embedded `deploy\SKILL.md` and this session's `deploy-checklist.md` before any deployment command, and again after compaction. Scaffold approval does not grant deployment approval. Do not substitute an azd workflow; this project uses Bicep and token-based local Static Web Apps deployment.
 
@@ -95,7 +95,7 @@ After explicit deployment approval:
 6. Invite the owner into `boutique-owner`, verify the trusted identity's actual email/userDetails, and test unauthorized access, writes, revision conflicts, health, and phone access over HTTPS.
 7. Record real URLs, resource IDs, checks, and limitations in the session result and update this document's status. Choose the active ledger with the owner and retain backups.
 
-Live .NET 10 health/routing, least-privilege SQL grants, migration equivalence, TLS1.2, seven-day PITR, and free-limit AutoPause configuration are now verified. The owner confirmed the personal Gmail identity, and Azure returned a successful boutique-owner assignment. Refreshed owner read/write and phone access remain unverified. Local test coverage used direct endpoint calls, a local SQL test database, and a mocked read-only UI API; live checks so far include public HTTP/access denial and direct encrypted SQL verification, not a completed authenticated browser end-to-end test.
+Live .NET 10 health/routing, least-privilege SQL grants, migration equivalence, TLS1.2, seven-day PITR, and free-limit AutoPause configuration are verified. The owner confirmed the personal Gmail identity and successful inventory access after redeeming a fresh invitation. An owner save through the hosted browser and phone access have not been independently observed. Local test coverage used direct endpoint calls, a local SQL test database, and a mocked read-only UI API; live evidence includes public HTTP/access denial, direct encrypted SQL verification and owner-confirmed authenticated inventory load. Preserve these distinctions when describing validation.
 
 ## Keeping this handoff useful
 

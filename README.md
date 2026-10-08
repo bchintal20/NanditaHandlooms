@@ -2,7 +2,7 @@
 
 For the business purpose, agreed rules, and scope, read [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md). For a future chat or developer taking over, start with [docs/HANDOFF.md](docs/HANDOFF.md). [AGENTS.md](AGENTS.md) points coding agents to these documents.
 
-The original local app is described below. The Azure version, validation commands, and migration procedure are documented in [cloud/README.md](cloud/README.md). Azure resources and code are deployed; owner access verification is in progress. The website is [Nandita Handlooms](https://gray-grass-0cab2cd10.6.azurestaticapps.net/).
+The original local app is described below. The Azure version, validation commands, and migration procedure are documented in [cloud/README.md](cloud/README.md). Azure is deployed and the owner confirmed inventory access after accepting the personal-account invitation. The website is [Nandita Handlooms](https://gray-grass-0cab2cd10.6.azurestaticapps.net/).
 
 Git tracks source and infrastructure only. The SQLite database, private workbook import, logs, photos/previews, local settings, generated migration exports, and Azure sign-in cache are excluded. A fresh clone starts without your business records; keep separate data backups.
 

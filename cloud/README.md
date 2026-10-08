@@ -1,6 +1,6 @@
 # Azure version
 
-The original local Python app remains intact. Azure resources and application code were deployed on October 7, 2026; the local ledger was imported with full payload equivalence. Owner sign-in verification is in progress. See [../docs/HANDOFF.md](../docs/HANDOFF.md) for current handoff status.
+The original local Python app remains intact. Azure resources and application code were deployed on October 7, 2026; the local ledger was imported with full payload equivalence. The owner confirmed inventory access after accepting the invitation with the personal Microsoft account. See [../docs/HANDOFF.md](../docs/HANDOFF.md) for current handoff status.
 
 Website: https://gray-grass-0cab2cd10.6.azurestaticapps.net/
 
@@ -9,6 +9,7 @@ After code changes, run `powershell -ExecutionPolicy Bypass -File cloud/redeploy
 - Website: Static Web Apps Free, Central US, managed .NET 10 isolated Functions.
 - Database: Azure SQL free offer, pause at monthly allowance exhaustion.
 - Owner login: Microsoft through Static Web Apps. Invite the owner into the `boutique-owner` role; backend additionally matches `BoutiqueOwnerEmail`.
+- First access requires redeeming the generated owner invitation with the matching personal account. A regular Microsoft sign-in gives only default roles. An `az staticwebapp users update` response alone did not establish usable owner access during setup; verify the authenticated app after invitation acceptance. Browser sessions may automatically select the employer account: use a personal browser/profile and confirm the identity at `/.auth/me`. Invitation links are private and temporary; keep them out of source control.
 - Public HTML contains no business records. APIs require platform authentication and owner authorization. All data remains behind the API.
 - Required server settings: `BoutiqueSqlConnection`, `BoutiqueOwnerEmail`, `BoutiquePublicOrigin`.
 
