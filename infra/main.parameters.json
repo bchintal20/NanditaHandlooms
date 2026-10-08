@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "nandita-dev-cbbf"
+    },
+    "location": {
+      "value": "centralus"
+    },
+    "sessionId": {
+      "value": "cbbfbb70-26b5-4ef5-9676-9e0ebc0213e3"
+    },
+    "deployedBy": {
+      "value": "Bharath Chintalapani"
+    },
+    "createdAt": {
+      "value": "2026-10-07T17:58:48.7426716-07:00"
+    },
+    "deploymentClientIp": {
+      "value": ""
+    }
+  }
+}

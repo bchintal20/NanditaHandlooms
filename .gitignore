@@ -1,0 +1,17 @@
+data/
+__pycache__/
+*.log
+.copilot-azure/
+.azure-personal/
+initial-workbook-import.json
+*-preview.png
+bin/
+obj/
+.artifacts/
+local.settings.json
+.env
+.env.*
+*.user
+*.suo
+*.sqlite3*
+*.bak
