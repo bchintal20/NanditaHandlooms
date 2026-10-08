@@ -1,6 +1,10 @@
 # Azure version
 
-The original local Python app remains intact. Azure deployment has not run yet.
+The original local Python app remains intact. Azure resources and application code were deployed on October 7, 2026; the local ledger was imported with full payload equivalence. Owner sign-in verification is in progress. See [../docs/HANDOFF.md](../docs/HANDOFF.md) for current handoff status.
+
+Website: https://gray-grass-0cab2cd10.6.azurestaticapps.net/
+
+After code changes, run `powershell -ExecutionPolicy Bypass -File cloud/redeploy.ps1` from the repository (or `pwsh -File cloud/redeploy.ps1` with PowerShell 7). This verifies the personal subscription, rebuilds, retrieves a token without printing it, and deploys code only. Business records are not imported or replaced by this command.
 
 - Website: Static Web Apps Free, Central US, managed .NET 10 isolated Functions.
 - Database: Azure SQL free offer, pause at monthly allowance exhaustion.
@@ -29,6 +33,10 @@ The export contains business data and stays in Git-ignored `.artifacts/`. Re-exp
 Infrastructure parameters exclude secrets. Generate separate administrator and app passwords during deployment; keep them out of logs/source/output. Setup schema with `dotnet run --project cloud/Tools -- setup` and an administrator connection supplied through the process environment variable `BoutiqueSqlConnection`. Execute `cloud/sql/app-user.sql` using a parameterized `@password` command, then use the limited app connection for the Functions API. Configure only the exact temporary bootstrap client IP; remove that firewall rule after schema/import setup.
 
 Import using `dotnet run --project cloud/Tools -- import .artifacts/migration-ledger.json`. The importer refuses a nonempty cloud database and verifies full normalized payload equivalence. Preserve existing historical-review records. Choose cloud as the active ledger after verification; there is no automatic local/cloud sync.
+
+With the limited application connection in `BoutiqueSqlConnection`, run `dotnet run --project cloud/Tools -- verify .artifacts/migration-ledger.json` to check source equivalence, required/restricted grants, transaction rollback and stale-revision rejection without changing ledger contents. Temporary operator firewall access is required for direct SQL verification; remove it afterward.
+
+CLI 2.0.10 reports an outdated configuration-schema warning for `dotnet-isolated:10.0`. The Azure service accepts this documented runtime; the deployed API health endpoint was verified. Preserve the runtime unless a deliberate supported-runtime change is agreed.
 
 Only the four explicit files in `.artifacts/site/` and compiled artifacts in `.artifacts/api/` are deployable. Never publish the repository root. Initial import is an operator command, not an unauthenticated web endpoint.
 
