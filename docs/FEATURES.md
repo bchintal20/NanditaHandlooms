@@ -78,3 +78,7 @@ Hosted loading shows progress, retries transient failures, and exposes a useful 
 ## Boutique accounts
 
 Independent email/password login, owner invitations, member access, remember-me, recovery codes, and account management are described in [ACCOUNTS.md](ACCOUNTS.md). This is deployed, and the owner confirmed successful password sign-in; check HANDOFF for verification details. Settings & backup contains the account controls. Microsoft/GitHub account selection is no longer needed to use the hosted ledger.
+
+Inventory tiles use equal responsive columns and row heights, a consistent preview area for photos/Instagram/placeholders, bounded color strips, and bottom-aligned actions. Long SKU/vendor/title text stays inside each card; title attributes preserve the full text on hover.
+
+Saving defaults displays Saving…, then a timestamped success message beside the save button. Editing defaults shows Unsaved changes; failed writes show Not saved and retain the entered values. Account-control errors are displayed separately. Log out is available in the header on every signed-in screen; the existing settings sign-out remains available. Logout clears the screen and revokes the current session in both hosted and local modes.

@@ -278,6 +278,11 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < length <= 15_000_000:
                 return self.send(413, {'error': 'Request too large (15 MB limit)'})
             body = json.loads(self.rfile.read(length))
+            if self.path == '/api/logout':
+                raw = self.headers.get('Cookie', '')
+                token = next((x.strip()[8:] for x in raw.split(';') if x.strip().startswith('session=')), '')
+                TOKENS.discard(token)
+                return self.send(200, {'ok': True}, 'session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0')
             if self.path == '/api/login':
                 import time
                 ip = self.client_address[0]

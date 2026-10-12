@@ -62,3 +62,5 @@ Operator owner reset: privately configure the operator connection and matching `
 Tests: `dotnet run --project cloud/AccountTests` runs synthetic account checks without private ledger fixtures. Add `-- --sql` only for isolated localhost SQL: creates/drops a uniquely guarded disposable test database and verifies token concurrency and persisted failed-attempt counters. Browser account UI checks use mocked APIs/synthetic records; no live business writes.
 
 Security references: [OWASP password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html), [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
+
+The header provides Log out on every signed-in screen, in addition to settings sign-out. It revokes the current session, clears in-memory ledger/account information, and returns to sign-in. A failed logout request reports an error rather than claiming success.

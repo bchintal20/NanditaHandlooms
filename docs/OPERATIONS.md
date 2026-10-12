@@ -42,6 +42,8 @@ node test_variants_ui.cjs
 node test_labels_ui.cjs
 node test_startup_ui.cjs
 node test_lazy_photos_ui.cjs
+node test_settings_feedback_ui.cjs
+node test_inventory_layout.cjs
 git diff --check
 ```
 
@@ -115,3 +117,5 @@ If persistent hosted failures need diagnosis, gather status/timing and sanitized
 ## Boutique account maintenance
 
 Read [ACCOUNTS.md](ACCOUNTS.md) before changing authentication, grants, bootstrap, recovery, or route configuration. Account migration is additive, separate from ordinary code deployment, and preserves the business ledger. It was completed for the current cloud site. Do not repeat owner-invite against an activated owner; use owner-reset for recovery. Setup/reset links and recovery codes are credentials: keep them private.
+
+Default settings show inline Saving…, timestamped success, Unsaved changes, and Not saved errors. The header Log out revokes the current session and returns to sign-in. After Python backend updates restart the local server; refreshing alone loads frontend changes but does not reload server routes.

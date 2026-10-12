@@ -20,6 +20,8 @@ end = app.index("</div>`;$('#settingsForm')", start) + len('</div>')
 app = app[:start] + """<div class="panel section-gap"><h2>Access from your devices</h2><p>Open this same website on your computer or phone. Both use the shared cloud ledger. Your computer can be switched off.</p><p class="muted">An internet connection is required. Safari → Share → Add to Home Screen creates a shortcut. The first request after inactivity may take longer while storage wakes up.</p><div id="accountControls"></div></div>""" + app[end:]
 # Account controls are only injected into the hosted Settings screen.
 app = app.replace("$('#settingsForm').onsubmit", "accountSettings();$('#settingsForm').onsubmit")
+# Global logout uses boutique session revocation in hosted mode.
+app = app.replace("$('#logout').onclick=logout;", "$('#logout').onclick=accountSignOut;")
 # Private invitation fragments are read once and removed before any ledger request.
 last = app.rfind('load();')
 app = app[:last] + "function accountStart(){if(location.hash.startsWith('#account=')){let token=location.hash.slice(9);window.history.replaceState(null,'',location.pathname+location.search);state=null;boutiqueUser=null;$('#nav').innerHTML='';accountForm('activate',token);}else load();}window.addEventListener('hashchange',accountStart);accountStart();" + app[last+len('load();'):]

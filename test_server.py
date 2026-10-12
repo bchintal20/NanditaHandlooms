@@ -38,6 +38,16 @@ class ServerTests(unittest.TestCase):
         result = res.status, data, res.getheader('Set-Cookie')
         con.close()
         return result
+    def test_logout_revokes_session_without_changing_ledger(self):
+        status, _, cookie = self.request('/api/login', {'pin': self.m.PIN})
+        self.assertEqual(status, 200)
+        before = self.m.read_state()
+        status, _, cleared = self.request('/api/logout', {}, cookie)
+        self.assertEqual(status, 200)
+        self.assertIn('Max-Age=0', cleared)
+        self.assertEqual(self.request('/api/state', cookie=cookie)[0], 401)
+        self.assertEqual(before, self.m.read_state())
+
     def test_variants_stock_media_and_legacy(self):
         seed=copy.deepcopy(self.seed)
         p=copy.deepcopy(seed['products'][0]);p.update(id='colors',qty=10,reserved=0,openingSold=0,shipment='',variants=[dict(id='red',name='Red',qty=3),dict(id='blue',name='Blue',qty=5)])
