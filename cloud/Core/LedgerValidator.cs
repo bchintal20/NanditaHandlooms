@@ -32,6 +32,23 @@ public static class LedgerValidator
             var photo=Optional(p,"photo","");
             if(photo.Length>0 && (!photo.StartsWith("data:image/jpeg;base64,") || photo.Length>1000000)) Fail("Invalid photo");
         }
+        var variants = new Dictionary<string, Dictionary<string, JsonObject>>();
+        foreach(var p in products) {
+            var rows=p.ContainsKey("variants") ? Rows(p,"variants") : new List<JsonObject>();
+            if(rows.Count>1000) Fail("Too many variants");
+            var names=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach(var v in rows) {
+                if(!names.Add(Text(v,"name").Trim())) Fail("Each color needs a unique name");
+                N(v,"qty",1,10000000000m,true);
+                var link=Optional(v,"instagram","");
+                if(link.Length>0 && (!Uri.TryCreate(link,UriKind.Absolute,out var u) || u.Scheme!="https" || !new[]{"instagram.com","www.instagram.com"}.Contains(u.Host))) Fail("Invalid variant Instagram URL");
+                var photo=Optional(v,"photo","");
+                if(photo.Length>0 && (!photo.StartsWith("data:image/jpeg;base64,") || photo.Length>1000000)) Fail("Invalid variant photo");
+            }
+            variants[Text(p,"id")]=rows.ToDictionary(v=>Text(v,"id"));
+        }
+        var variantSold=variants.ToDictionary(x=>x.Key,x=>x.Value.ToDictionary(v=>v.Key,_=>0m));
+        var unassignedSold=pm.ToDictionary(x=>x.Key,x=>N(x.Value,"openingSold"));
         var sold=pm.ToDictionary(x=>x.Key,x=>N(x.Value,"openingSold"));
         foreach(var sale in sales) {
             Date(sale,"date");
@@ -49,7 +66,10 @@ public static class LedgerValidator
             if(!taxable && (N(sale,"tax")!=0 || Optional(sale,"reason","").Trim().Length==0)) Fail("Nontaxable sales require a reason and zero tax");
             var pid=Text(sale,"product");
             if(!pm.ContainsKey(pid)) Fail("Missing sale product");
-            sold[pid]+=N(sale,"qty",1,10000000000m,true);
+            var qty=N(sale,"qty",1,10000000000m,true);sold[pid]+=qty;
+            var vid=Optional(sale,"variant","");
+            if(vid.Length>0) {if(!variants[pid].ContainsKey(vid)) Fail("Missing sale variant");variantSold[pid][vid]+=qty;}
+            else unassignedSold[pid]+=qty;
         }
         var saleMap=sales.ToDictionary(x=>Text(x,"id"));var refunded=new HashSet<string>();
         foreach(var r in returns) {
@@ -57,9 +77,18 @@ public static class LedgerValidator
             if(!saleMap.ContainsKey(id) || !refunded.Add(id)) Fail("Each sale may have one full refund");
             var sale=saleMap[id];
             if(Date(r,"date")<Date(sale,"date")) Fail("Refund cannot precede sale");
-            if(r["restock"]!.GetValue<bool>()) sold[Text(sale,"product")]-=N(sale,"qty");
+            if(r["restock"]!.GetValue<bool>()) {
+                var pid=Text(sale,"product");var qty=N(sale,"qty");sold[pid]-=qty;
+                var vid=Optional(sale,"variant","");
+                if(vid.Length>0) variantSold[pid][vid]-=qty;else unassignedSold[pid]-=qty;
+            }
         }
         foreach(var p in products) if(sold[Text(p,"id")]+N(p,"reserved")>N(p,"qty")) Fail("Sold plus reserved exceeds received quantity");
+        foreach(var p in products) {
+            var pid=Text(p,"id");
+            if(variants[pid].Values.Sum(v=>N(v,"qty"))+unassignedSold[pid]>N(p,"qty")) Fail("Color quantities exceed stock after unassigned sales");
+            if(variants[pid].Any(v=>variantSold[pid][v.Key]>N(v.Value,"qty"))) Fail("Sales exceed stock for a color");
+        }
         var pendingCounts=pm.ToDictionary(x=>x.Key,_=>0m);
         foreach(var p in pending) {
             var pid=Text(p,"product");if(!pm.ContainsKey(pid)) Fail("Missing historical sale product");

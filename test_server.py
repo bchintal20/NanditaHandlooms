@@ -38,6 +38,36 @@ class ServerTests(unittest.TestCase):
         result = res.status, data, res.getheader('Set-Cookie')
         con.close()
         return result
+    def test_variants_stock_media_and_legacy(self):
+        seed=copy.deepcopy(self.seed)
+        p=copy.deepcopy(seed['products'][0]);p.update(id='colors',qty=10,reserved=0,openingSold=0,shipment='',variants=[dict(id='red',name='Red',qty=3),dict(id='blue',name='Blue',qty=5)])
+        seed['products'].append(p)
+        sale=dict(id='color-sale',product='colors',variant='red',qty=3,date='2026-10-09',payment='Cash',price=150,tax=0,expense=0,taxable=True,reason='')
+        seed['sales'].append(sale);self.m.validate(seed)
+        sale['qty']=4
+        with self.assertRaisesRegex(ValueError,'color'): self.m.validate(seed)
+        sale['qty']=3;sale['variant']='missing'
+        with self.assertRaisesRegex(ValueError,'variant'): self.m.validate(seed)
+        sale['variant']=''
+        with self.assertRaisesRegex(ValueError,'Color'): self.m.validate(seed)
+        sale['qty']=2;self.m.validate(seed)
+        p['variants'][0]['qty']=4
+        with self.assertRaises(ValueError): self.m.validate(seed)
+        p['variants'][0]['qty']=3;sale['variant']='red';sale['qty']=3
+        seed['returns'].append(dict(id='color-return',sale='color-sale',date='2026-10-10',restock=True))
+        seed['sales'].append(dict(sale,id='resold'));self.m.validate(seed)
+        seed['returns'][-1]['restock']=False
+        with self.assertRaises(ValueError): self.m.validate(seed)
+        seed['returns'][-1]['restock']=True
+        for key,value in [('qty',1.5),('qty',0),('name','Blue'),('id','blue'),('instagram','https://example.com/'),('photo','data:text/html,test')]:
+            original=p['variants'][0].get(key);p['variants'][0][key]=value
+            with self.assertRaises(ValueError): self.m.validate(seed)
+            if original is None:p['variants'][0].pop(key)
+            else:p['variants'][0][key]=original
+        p['variants']=[]
+        with self.assertRaisesRegex(ValueError,'variant'): self.m.validate(seed)
+        self.m.validate(copy.deepcopy(self.seed))
+
     def test_http_save_restore_conflicts_and_auth(self):
         self.assertEqual(self.request('/api/state')[0],401)
         self.assertEqual(self.request('/api/login',{'pin':self.m.PIN},origin=False)[0],403)

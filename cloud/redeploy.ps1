@@ -4,8 +4,18 @@ $repo=Split-Path $PSScriptRoot -Parent
 Set-Location $repo
 $env:AZURE_CONFIG_DIR=Join-Path $repo '.azure-personal'
 $subscription='ef6358bf-6180-4a31-a0e2-97b0a66dc438'
-$accountText=& az account show -o json 2>$null
-if($LASTEXITCODE -ne 0){throw 'Sign in to the personal Azure CLI configuration first.'}
+function Invoke-DeployAz {
+ param([string]$Label,[string[]]$Arguments)
+ $audit=Join-Path $repo '.artifacts/code-deploy-audit.log'
+ Add-Content -LiteralPath $audit -Value "$([DateTime]::UtcNow.ToString('o')) started $Label"
+ $result=& az @Arguments 2>$null
+ $code=$LASTEXITCODE
+ Add-Content -LiteralPath $audit -Value "$([DateTime]::UtcNow.ToString('o')) $(if($code -eq 0){'succeeded'}else{'failed'}) $Label exit=$code"
+ if($code -ne 0){throw "Azure command failed: $Label"}
+ return $result
+}
+New-Item -ItemType Directory -Path (Join-Path $repo '.artifacts') -Force | Out-Null
+$accountText=Invoke-DeployAz 'Verify personal subscription' @('account','show','-o','json')
 $account=($accountText -join "`n") | ConvertFrom-Json
 if($account.id -ne $subscription -or $account.tenantId -ne '99fe16c7-0092-41c3-8ca5-a7e3f7031788'){throw 'Expected personal Azure subscription; deployment stopped.'}
 python cloud/build_ui.py
@@ -23,8 +33,7 @@ Copy-Item '.artifacts/site/*' "$stage/site" -Recurse
 Copy-Item '.artifacts/api/*' "$stage/api" -Recurse
 if(@(Get-ChildItem "$stage/site" -File).Count -ne 4){throw 'Unexpected public files'}
 try {
- $token=& az staticwebapp secrets list --subscription $subscription -n swa-nandita-dev-cbbf -g rg-nandita-dev-cbbf --query properties.apiKey -o tsv 2>$null
- if($LASTEXITCODE -ne 0){throw 'Could not retrieve deployment token'}
+ $token=Invoke-DeployAz 'Retrieve SWA token (output suppressed)' @('staticwebapp','secrets','list','--subscription',$subscription,'-n','swa-nandita-dev-cbbf','-g','rg-nandita-dev-cbbf','--query','properties.apiKey','-o','tsv')
  $env:SWA_CLI_DEPLOYMENT_TOKEN=($token -join '').Trim()
  & $cli deploy "$stage/site" --api-location "$stage/api" --api-language dotnetisolated --api-version 10.0 --app-name swa-nandita-dev-cbbf --env production
  if($LASTEXITCODE -ne 0){throw 'Code deployment failed'}

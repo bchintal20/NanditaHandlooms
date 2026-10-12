@@ -102,6 +102,32 @@ def validate(s):
                 raise ValueError('Use an https://www.instagram.com/ post or reel link')
         if p.get('photo') and (not p['photo'].startswith('data:image/jpeg;base64,') or len(p['photo']) > 1000000):
             raise ValueError('Photo must be an app-compressed JPEG')
+    variants = {}
+    for pid, p in products.items():
+        rows = p.get('variants', [])
+        if not isinstance(rows, list) or len(rows) > 1000 or any(not isinstance(v, dict) for v in rows):
+            raise ValueError('Invalid variants')
+        ids = [v.get('id') for v in rows]
+        if any(not isinstance(i, str) or not i for i in ids) or len(set(ids)) != len(ids):
+            raise ValueError('Duplicate or invalid variant IDs')
+        names = set()
+        for v in rows:
+            name = v.get('name')
+            if not isinstance(name, str) or not name.strip() or name.strip().casefold() in names:
+                raise ValueError('Each color needs a unique name')
+            names.add(name.strip().casefold())
+            number(v.get('qty'), 'Variant quantity', 1)
+            if int(v['qty']) != v['qty']:
+                raise ValueError('Variant quantities must be whole numbers')
+            if v.get('instagram'):
+                u = urlparse(v['instagram'])
+                if u.scheme != 'https' or u.hostname not in ('instagram.com', 'www.instagram.com'):
+                    raise ValueError('Use an https Instagram link for the color')
+            if v.get('photo') and (not v['photo'].startswith('data:image/jpeg;base64,') or len(v['photo']) > 1000000):
+                raise ValueError('Variant photo must be an app-compressed JPEG')
+        variants[pid] = {v['id']: v for v in rows}
+    variant_sold = {pid: {vid: 0 for vid in rows} for pid, rows in variants.items()}
+    unassigned_sold = {pid: p.get('openingSold', 0) for pid, p in products.items()}
     sale_map = {x['id']: x for x in s['sales']}
     sold = {pid: p.get('openingSold', 0) for pid, p in products.items()}
     for sale in s['sales']:
@@ -131,6 +157,13 @@ def validate(s):
         if int(sale['qty']) != sale['qty']:
             raise ValueError('Sale quantity must be a whole number')
         sold[p['id']] += sale['qty']
+        vid = sale.get('variant', '')
+        if not isinstance(vid, str) or (vid and vid not in variants[p['id']]):
+            raise ValueError('Missing sale variant')
+        if vid:
+            variant_sold[p['id']][vid] += sale['qty']
+        else:
+            unassigned_sold[p['id']] += sale['qty']
     refunded = set()
     for r in s['returns']:
         date(r['date'])
@@ -142,9 +175,18 @@ def validate(s):
         refunded.add(r['sale'])
         if r['restock']:
             sold[sale['product']] -= sale['qty']
+            if sale.get('variant'):
+                variant_sold[sale['product']][sale['variant']] -= sale['qty']
+            else:
+                unassigned_sold[sale['product']] -= sale['qty']
     for pid, p in products.items():
         if sold[pid] + p['reserved'] > p['qty']:
             raise ValueError('Sold plus reserved quantity exceeds received quantity for ' + p['sku'])
+    for pid, p in products.items():
+        if sum(v['qty'] for v in variants[pid].values()) + unassigned_sold[pid] > p['qty']:
+            raise ValueError('Color quantities exceed stock after unassigned sales for ' + p['sku'])
+        if any(variant_sold[pid][vid] > v['qty'] for vid, v in variants[pid].items()):
+            raise ValueError('Sales exceed stock for a color in ' + p['sku'])
     pending_counts = {pid: 0 for pid in products}
     for pending in s.get('pending', []):
         if pending['product'] not in products:

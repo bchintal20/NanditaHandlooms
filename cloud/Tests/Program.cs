@@ -21,6 +21,51 @@ copy=(JsonObject)validated.DeepClone();copy["sales"]![0]!["qty"]=100000;Reject(c
 copy=(JsonObject)validated.DeepClone();copy["sales"]![0]!["qty"]=1.5m;Reject(copy,"Fractional sale accepted");
 copy=(JsonObject)validated.DeepClone();copy["sales"]![0]!["shippingCharge"]=-1;Reject(copy,"Negative shipping accepted");
 copy=(JsonObject)validated.DeepClone();copy["sales"]![0]!["taxable"]=false;copy["sales"]![0]!["tax"]=1;Reject(copy,"Nontaxable sale with tax accepted");
+copy=(JsonObject)validated.DeepClone();
+var colorProduct=(JsonObject)copy["products"]![0]!.DeepClone();
+colorProduct["id"]="colors";colorProduct["qty"]=10;colorProduct["reserved"]=0;colorProduct["openingSold"]=0;colorProduct["shipment"]="";
+colorProduct["variants"]=JsonNode.Parse("[{\"id\":\"red\",\"name\":\"Red\",\"qty\":3},{\"id\":\"blue\",\"name\":\"Blue\",\"qty\":5}]");
+copy["products"]!.AsArray().Add(colorProduct);
+var colorSale=new JsonObject{["id"]="color-sale",["product"]="colors",["variant"]="red",["qty"]=3,["date"]="2026-10-09",["payment"]="Cash",["price"]=150,["tax"]=0,["expense"]=0,["taxable"]=true,["reason"]=""};
+copy["sales"]!.AsArray().Add(colorSale);LedgerValidator.Validate(copy);checks++;
+colorSale["qty"]=4;Reject(copy,"Color overselling accepted");colorSale["qty"]=3;
+colorSale["variant"]="missing";Reject(copy,"Missing variant accepted");
+colorSale["variant"]="";Reject(copy,"Unassigned overselling accepted");colorSale["qty"]=2;LedgerValidator.Validate(copy);checks++;
+colorProduct["variants"]![0]!["qty"]=4;Reject(copy,"Overallocation accepted");colorProduct["variants"]![0]!["qty"]=3;
+colorSale["variant"]="red";colorSale["qty"]=3;
+var colorReturn=new JsonObject{["id"]="color-return",["sale"]="color-sale",["date"]="2026-10-10",["restock"]=true};copy["returns"]!.AsArray().Add(colorReturn);
+var resale=(JsonObject)colorSale.DeepClone();resale["id"]="color-resale";copy["sales"]!.AsArray().Add(resale);LedgerValidator.Validate(copy);checks++;
+colorReturn["restock"]=false;Reject(copy,"Non-restocked color reused");colorReturn["restock"]=true;
+colorProduct["variants"]![0]!["photo"]="data:text/html,test";Reject(copy,"Unsafe variant media accepted");colorProduct["variants"]![0]!.AsObject().Remove("photo");
+colorProduct["variants"]![0]!["instagram"]="https://example.com";Reject(copy,"Foreign color link accepted");colorProduct["variants"]![0]!.AsObject().Remove("instagram");
+colorProduct["variants"]![0]!["qty"]=1.5m;Reject(copy,"Fractional variant accepted");colorProduct["variants"]![0]!["qty"]=3;
+colorProduct["variants"]![0]!["name"]="Blue";Reject(copy,"Duplicate color accepted");colorProduct["variants"]![0]!["name"]="Red";
+colorProduct["variants"]=new JsonArray();Reject(copy,"Referenced variant deleted");
+var photoFixture=(JsonObject)validated.DeepClone();
+var photoBatch=(JsonObject)photoFixture["products"]![0]!.DeepClone();
+photoBatch["id"]="photo / product";photoBatch["openingSold"]=0;photoBatch["qty"]=2;photoBatch["reserved"]=0;photoBatch["shipment"]="";
+photoBatch["photo"]="data:image/jpeg;base64,"+new string('A',700000);
+photoBatch["variants"]=new JsonArray(new JsonObject{["id"]="blue + variant",["name"]="Blue",["qty"]=1,["photo"]="data:image/jpeg;base64,"+new string('B',400000)});
+photoFixture["products"]!.AsArray().Add(photoBatch);LedgerValidator.Validate(photoFixture);
+var untouched=(JsonObject)photoFixture.DeepClone();var lightweight=LedgerPhotos.BrowserState(photoFixture);
+Check(JsonNode.DeepEquals(photoFixture,untouched),"Photo projection mutated source");
+Check(lightweight.ToJsonString().Length<photoFixture.ToJsonString().Length/5,"Images still in startup state");
+Check(lightweight["products"]!.AsArray().Last()!["photo"]!.GetValue<string>().StartsWith("/api/photo?product=photo%20%2F%20product"),"Photo reference did not encode identifier");
+var resolved=LedgerPhotos.ResolveForSave(lightweight,photoFixture);
+Check(JsonNode.DeepEquals(resolved,photoFixture),"Photo roundtrip lost original data");
+var edited=(JsonObject)lightweight.DeepClone();edited["settings"]!["name"]="Edited boutique";
+resolved=LedgerPhotos.ResolveForSave(edited,photoFixture);LedgerValidator.Validate(resolved);
+Check(JsonNode.DeepEquals(resolved["products"],photoFixture["products"]),"Non-photo edit discarded photos");
+edited=(JsonObject)lightweight.DeepClone();edited["products"]!.AsArray().Last()!["photo"]="";
+resolved=LedgerPhotos.ResolveForSave(edited,photoFixture);Check(resolved["products"]!.AsArray().Last()!["photo"]!.GetValue<string>()=="","Explicit removal ignored");
+edited=(JsonObject)lightweight.DeepClone();edited["products"]!.AsArray().Last()!["variants"]![0]!["photo"]="data:image/jpeg;base64,YWJj";
+resolved=LedgerPhotos.ResolveForSave(edited,photoFixture);Check(resolved["products"]!.AsArray().Last()!["variants"]![0]!["photo"]!.GetValue<string>()=="data:image/jpeg;base64,YWJj","Replacement ignored");
+edited=(JsonObject)lightweight.DeepClone();edited["products"]!.AsArray().Last()!["photo"]="/api/photo?product=other";
+try{LedgerPhotos.ResolveForSave(edited,photoFixture);throw new Exception("Foreign photo reference accepted");}catch(ArgumentException){checks++;}
+edited=(JsonObject)lightweight.DeepClone();edited["products"]!.AsArray().Last()!["photo"]="https://example.com/image";
+try{LedgerPhotos.ResolveForSave(edited,photoFixture);throw new Exception("External photo reference accepted");}catch(ArgumentException){checks++;}
+var newer=(JsonObject)photoFixture.DeepClone();newer["revision"]=LedgerValidator.N(newer,"revision")+1;
+try{LedgerPhotos.ResolveForSave(lightweight,newer);throw new Exception("Outdated photo reference accepted");}catch(ArgumentException){checks++;}
 string Principal(string email,string[] roles)=>Convert.ToBase64String(Encoding.UTF8.GetBytes(new JsonObject{["identityProvider"]="aad",["userId"]="test-user",["userDetails"]=email,["userRoles"]=new JsonArray(roles.Select(r=>(JsonNode?)JsonValue.Create(r)).ToArray())}.ToJsonString()));
 Check(Identity.IsOwner(Principal("owner@example.com",["boutique-owner"]),"OWNER@example.com"),"Owner denied");
 Check(!Identity.IsOwner(Principal("other@example.com",["boutique-owner"]),"owner@example.com"),"Wrong owner accepted");
@@ -35,6 +80,7 @@ var health=await endpoints.Health(new Request("GET"));Check(health.StatusCode==H
 var denied=await endpoints.Ledger(new Request("GET"),"state");Check(denied.StatusCode==HttpStatusCode.Forbidden,"Anonymous endpoint allowed");
 var foreign=new Request("POST");foreign.Headers.Add("x-ms-client-principal",Principal("owner@example.com",["boutique-owner"]));foreign.Headers.Add("Origin","https://evil.example.com");foreign.Headers.Add("Content-Type","application/json");
 denied=await endpoints.Ledger(foreign,"state");Check(denied.StatusCode==HttpStatusCode.Forbidden,"Cross-origin write accepted");
+var photoDenied=await endpoints.Photo(new Request("GET"));Check(photoDenied.StatusCode==HttpStatusCode.Forbidden,"Anonymous photo access allowed");
 var remoteTest=new SqlLedgerStore("Server=cloud.database.windows.net;Database=x;Integrated Security=true",true);
 try{await remoteTest.ReadAsync();throw new Exception("Remote test-certificate override allowed");}catch(InvalidOperationException){checks++;}
 if(args.Contains("--sql")) {

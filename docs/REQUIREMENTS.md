@@ -1,6 +1,6 @@
 # Nandita Handlooms — business requirements
 
-This is the durable record of why the application exists and how its business calculations must behave. Read it before changing inventory, pricing, sales, shipping, reporting, or imports. Implementation and deployment status belong in [HANDOFF.md](HANDOFF.md); operating instructions belong in [../README.md](../README.md).
+This is the durable record of why the application exists and how its business calculations must behave. Read it before changing inventory, pricing, sales, shipping, reporting, or imports. Implementation and deployment status belong in [HANDOFF.md](HANDOFF.md); screen workflows belong in [FEATURES.md](FEATURES.md); operating instructions belong in [OPERATIONS.md](OPERATIONS.md).
 
 ## Purpose and users
 
@@ -93,7 +93,7 @@ Confirmed example: Prajwala paid **$112 total: $102 product revenue + $10 shippi
 - Restocked returns reverse associated inventory cost and restore stock. Non-restocked returns leave inventory cost as a loss.
 - Select calendar year and quarter. Provide sales excluding collected tax, shipping income, taxable and documented nontaxable amounts, collected/refunded tax, refunds, and transaction detail in downloadable CSV.
 - Same-quarter full refunds reduce that quarter's taxable-sales worksheet. Prior-quarter refunds are flagged for separate credit review rather than automatically deducted from current-quarter taxable sales. Net revenue and net tax held include refunds dated in the selected quarter.
-- This is a filing preparation worksheet, not automatic CDTFA filing or a complete determination of tax owed. Retain location/district information, exemption notes, shipping documentation, and historical exports. Existing tax links in the main README are reference material; verify current guidance when modifying tax behavior.
+- This is a filing preparation worksheet, not automatic CDTFA filing or a complete determination of tax owed. Retain location/district information, exemption notes, shipping documentation, and historical exports. Reference sources include [CDTFA shipping guidance](https://www.cdtfa.ca.gov/formspubs/pub100/), [return instructions](https://www.cdtfa.ca.gov/formspubs/cdtfa401inst.pdf), and [local tax rates](https://www.cdtfa.ca.gov/taxes-and-fees/sales-use-tax-rates.htm). Verify current guidance when modifying tax behavior.
 
 The owner initially asked to omit cash sales from CDTFA. The implemented reporting includes all payment methods and must retain that behavior. Documented tax treatment, rather than a cash label, controls taxable amounts.
 
@@ -133,3 +133,27 @@ Partial refunds, exchanges, voids, general stock adjustments, editing recorded s
 | Fresh source clone | No business records or credentials included. |
 
 Update this document when the owner changes business requirements. Record implementation progress and unresolved operational work in HANDOFF.md instead of treating a plan as a completed feature.
+
+## Color variants (owner authorized October 9, 2026)
+
+A purchase batch can contain multiple color variants under one SKU. Each variant has a stable ID, unique color/name, whole assigned quantity, optional compressed JPEG photo, and its own Instagram URL. Costs and MSRP remain at the parent batch; variants do not add received stock or duplicate freight allocations.
+
+Variant on hand = assigned quantity minus recorded sales for that variant plus restocked returns. Assigned quantities plus net unassigned sales and opening historical sold pieces cannot exceed parent received quantity. Remaining stock is explicitly unassigned. Legacy sales keep their original amounts and unassigned color; do not infer a color from customer or product descriptions. Reservations stay at batch level. A sale selects one variant or unassigned stock, subject to both color stock and batch availability. Mixed-color purchases use separate entries with a shared reference. Referenced variants must remain present even after a refund. Color names appear on sales and quarterly CSV; backup/restore preserves variants. Existing backups without variants remain supported.
+
+## Inventory image previews and price labels (October 9, 2026)
+
+The owner requested photo/Instagram previews, a bold rounded tax-inclusive .99 price, and an easy label-printing workflow. The owner supplied Amazon ASIN B0CKYMWV5X, identifying a SUPVAN T50M Pro label printer. The installed roll size was not confirmed; provide an adjustable size with 40 × 30 mm as a disclosed starting preset.
+
+Prefer uploaded product images, then available variant images; use an embedded public Instagram post/reel preview when no photo exists. Keep an external Instagram link and disclose that restricted/unavailable posts can fail to embed. Do not scrape Instagram media or require an Instagram integration credential.
+
+The inventory card and exported label must share one .99 rounding function, including the configured default tax once. Round upward to the nearest price ending .99 without increasing a price already ending .99. This remains a suggested customer-facing price, not a change to actual sale/tax recording.
+
+Generate per-batch/per-color labels containing boutique name, product/color, SKU, large tax-inclusive price and “Tax included”. Allow copy counts and custom label dimensions. SUPVAN app image import is the printer-specific workflow; direct Bluetooth printing is outside scope. Browser printing/PDF via the system dialog remains available. Never print purchase costs or profit. Producing labels must not mutate stock, transactions, settings or tax records. Actual roll orientation and hardware fit require an owner test print.
+
+
+## Startup and recovery
+Inventory loading must have a visible status. API/network failures must show an actionable error and manual retry; initial Overview must not remain empty while waiting. Startup reads may retry a bounded number of times. Do not replay sales or restore requests automatically. On an ambiguous save timeout, ask the owner to refresh and check the saved state before retrying. Existing ledger data must not be replaced with an empty default on connection failure.
+
+
+## Image-heavy inventory performance and preservation
+Cloud Overview must load inventory details without downloading every photo. Fetch photos privately on demand, retaining owner-only access. Editing inventory/sales/settings must preserve images omitted from transport. Backups and restore must contain original images, not temporary/private URLs. Keep legacy client/full backup behavior compatible. Original embedded image storage may remain server-side; keep local/cloud stores separate and do not overwrite either during performance fixes.

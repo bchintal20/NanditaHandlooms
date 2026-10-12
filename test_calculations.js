@@ -1,6 +1,6 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const code=fs.readFileSync(process.env.BOUTIQUE_TEST_APP||__dirname+'/app.js','utf8').replace("$('#refresh').onclick=load;\nload();",'');
-const context=vm.createContext({console,Intl,Date,Math,Number,String,document:{querySelector(){return {}}}});
+const code=fs.readFileSync(process.env.BOUTIQUE_TEST_APP||__dirname+'/app.js','utf8').replace(/\r\n/g,'\n').replace("$('#refresh').onclick=load;\nload();",'');
+const context=vm.createContext({console,Intl,Date,Math,Number,String,URL,document:{querySelector(){return {}}}});
 vm.runInContext(code,context);
 const run=s=>vm.runInContext(s,context);
 const near=(a,b)=>assert.ok(Math.abs(a-b)<.00001,`${a} != ${b}`);
@@ -33,3 +33,30 @@ run("state.sales[0].shippingCost=7;state.returns=[{sale:'ship-sale',restock:true
 run('state.sales[0].taxable=true;state.sales[0].shippingTaxable=4');near(run('taxableBase(state.sales[0])'),106);
 near(run('round((119.1-10-4*.0875)/(1+.0875))'),100);
 console.log('Shipping tests passed: income vs expense, missing costs, full-refund expenses, partial taxable shipping, included-tax extraction.');
+
+run("state.products[0].qty=10;state.products[0].variants=[{id:'red',name:'Red',qty:3},{id:'blue',name:'Blue',qty:5}];state.sales=[{id:'color',product:'p',variant:'red',qty:2,price:100,tax:0,expense:0}];state.returns=[]");
+assert.equal(run("variantStock(product('p'),product('p').variants[0])"),1);
+assert.equal(run("variantStock(product('p'),product('p').variants[1])"),5);
+assert.equal(run("unassignedStock(product('p'))"),2);
+assert.equal(run("onhand(product('p'))"),8);
+assert.equal(run('saleColor(state.sales[0])'),'Red');
+run("state.returns=[{sale:'color',restock:true}]");
+assert.equal(run("variantStock(product('p'),product('p').variants[0])"),3);
+assert.equal(run("onhand(product('p'))"),10);
+run("state.returns=[];state.sales[0].variant='';state.sales[0].qty=1");
+assert.equal(run("unassignedStock(product('p'))"),1);
+assert.equal(run('saleColor(state.sales[0])'),'Unassigned');
+console.log('Variant calculations passed: independent color stock, legacy stock, restocking, parent totals.');
+
+run("state.settings.pricing='markup';state.settings.margin=0;state.settings.tax=0;state.products[0].purchase=162.99");
+near(run("roundedLabelPrice(product('p'))"),162.99);
+run("state.products[0].purchase=162.98");near(run("roundedLabelPrice(product('p'))"),162.99);
+run("state.products[0].purchase=163");near(run("roundedLabelPrice(product('p'))"),163.99);
+run("state.products[0].purchase=149.1;state.settings.tax=8.75");near(run("roundedLabelPrice(product('p'))"),162.99);
+assert.equal(run("instagramEmbed('https://www.instagram.com/reel/a_B-1/?utm_source=share')"),'https://www.instagram.com/reel/a_B-1/embed/');
+for(const url of ['http://instagram.com/p/test/','https://evil.com/p/test/','https://www.instagram.com/account/','javascript:alert(1)','https://www.instagram.com/p/test/extra']) assert.equal(run('instagramEmbed('+JSON.stringify(url)+')'),'');
+run("state.products[0].photo='parent';state.products[0].variants[0].photo='red'");
+assert.equal(run("mediaFor(product('p')).photo"),'parent');
+assert.equal(run("mediaFor(product('p'),product('p').variants[0]).photo"),'red');
+run("state.products[0].photo=''");assert.equal(run("mediaFor(product('p')).photo"),'red');
+console.log('Label and preview tests passed: .99 boundaries, inclusive tax, safe Instagram URLs, photo fallback.');
