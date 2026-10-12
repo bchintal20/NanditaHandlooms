@@ -51,3 +51,19 @@ Constrained inventory columns with minmax(0,1fr), standardized preview height, a
 ## Default-setting feedback and visible logout
 
 Added inline saving, timestamped success, unsaved-edit, and failure feedback next to Save defaults. Async account-control errors no longer overwrite settings feedback. Added a header Log out control on all signed-in pages; hosted mode uses boutique-session revocation, while local mode has a new same-origin logout endpoint. Both clear displayed ledger state. Verified desktop/mobile save success/failure and delayed account metadata, header logout, and isolated local session revocation. Deployed to Azure with staged/live asset equivalence and protected-data checks; the local server was restarted for its new endpoint. Included the previously approved inventory styling in the source checkpoint.
+
+## Compact inventory tiles without variants
+
+Removed equal-height grid rows and automatic action-button pushdown, which created unused space on cards without variants. Tile widths/previews remain consistent; height now follows content and actions have an 18-pixel gap. Layout regression checks verify compact action spacing, shorter variant-free cards, and no horizontal overflow at desktop/tablet/phone widths.
+
+The compact-card correction is deployed to Azure; live UI assets matched staging and protected API checks passed. No business records were changed.
+
+## Sale selection image previews
+
+Added adjacent 72-pixel product/color thumbnails in Record a sale. Product changes rebuild available color choices and both images; color changes update the color preview. Generic photo fallback is labeled and missing/failed images are explicit. Reuses existing private cloud photo URLs; no sale, pricing, or stock logic changed.
+
+## Sale preview cleanup
+
+Selected variant photos now suppress the SKU/batch thumbnail. If a variant has no photo, only an actual batch photo is used; no other color is substituted. Missing/failed previews are hidden, including their empty layout column. No photo placeholders or duplicated batch fallback beside the color selector remain.
+
+Sale-preview cleanup is deployed to Azure; desktop/mobile checks and live asset/access verification passed.
