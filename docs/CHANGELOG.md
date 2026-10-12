@@ -34,4 +34,12 @@ Evidence: 40 C# checks including preserve/edit/remove/replace photo cases and fo
 
 ## Documentation consolidation
 
-Organized requirements, screen guide, architecture, operations, current handoff, and history as Markdown in the repository. Root README indexes them; AGENTS directs future chats by task. Source documentation is separate from private release evidence and business backups. No application data or deployed code is changed by this documentation update.
+Organized requirements, screen guide, architecture, operations, current handoff, and history as Markdown in the repository. Root README indexes them; AGENTS directs future chats by task. Source documentation is separate from private release evidence and business backups. That documentation-only consolidation did not change application data or deployed code.
+
+## October 12, 2026: independent boutique accounts
+
+Added invite-only email/password accounts, 30-day remember-me, 12-hour normal sessions, saved recovery codes, password change/reset, owner invitation/reset/disable/reinvite controls, and full-access members. No external account-provider switching or email service is required. Salted PBKDF2 password hashes and hashed random tokens are stored separately from ledger JSON. Serializable rate limits/token consumption, secure HttpOnly cookies, exact-origin writes, and immediate session revocation protect access. Microsoft principals no longer authorize data endpoints.
+
+Passed 48 synthetic/isolated-SQL account checks and 50 ledger/API checks, including concurrent token use, persisted failed attempts, origin denial, and platform-header bypass denial. Desktop/mobile account workflows, financial/local, startup, lazy-photo/full-backup, cloud-navigation, variant, and label regressions passed. Fixed the historical-review function's collision with native browser History so invitation fragments are removed correctly.
+
+Additive account table/grants migration verified the financial revision/payload unchanged. Initial SQL cold-start attempt timed out; retry succeeded and temporary exact-IP operator rules were removed. Deployed via existing code-only workflow; all live assets matched stage, anonymous ledger/backup/photo/account requests and a forged session returned 401, cross-origin login returned 403, health returned 200. Opened the owner's private setup link in Chrome. The owner subsequently confirmed successful login with the new password. Password activation/sign-in are confirmed; authenticated inventory display and recovery-code storage were not separately confirmed. No password was chosen or collected by the agent.

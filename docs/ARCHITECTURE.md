@@ -13,7 +13,9 @@ The UI computes display costs, pricing, stock, profit, and reports from one ledg
 | `index.html`, `style.css`, `app.js` | Screens, forms, shared calculations, labels, backups, startup/retries, optimistic saves. |
 | `server.py` | Local access-code/cookie handling, validation, SQLite persistence, full-state APIs. |
 | `Start Boutique.bat`, `Start Boutique WiFi.bat`, `Stop Boutique.bat` | Owner local launch/stop entry points. |
-| `cloud/Core/Identity.cs` | Trusted platform principal, provider/email/role owner check. |
+| `cloud/Core/Identity.cs` | Legacy platform-principal helper retained for historical tests; not a boutique data gate. |
+| `cloud/Core/BoutiqueAccounts.cs`, `SqlAccountStore.cs` | Account transitions, password/token handling, and separate SQL account store. |
+| `cloud/Api/AccountEndpoints.cs`, `cloud/account-ui.js` | Session authorization, account API, and hosted sign-in/management UI. |
 | `cloud/Core/LedgerValidator.cs` | Hosted ledger/business validation. |
 | `cloud/Core/LedgerPhotos.cs` | Metadata projection and exact photo-reference preservation on saves. |
 | `cloud/Core/SqlLedgerStore.cs` | SQL state/history, concurrency transactions, metadata/photo reads. |
@@ -61,13 +63,13 @@ On save, exact matching product/variant/current-revision photo references are hy
 
 Full backup explicitly fetches complete JSON instead of exporting metadata already in browser memory. Browsers transparently decompress gzip; downloaded backups remain ordinary JSON. The backup fetch allows longer completion time. Local mode still uses inline full-state images.
 
-Hosted staging modifies the original UI for Microsoft authentication, cloud messages, and lazy routes, and adds `/app.js?v=<content fingerprint>` to avoid stale phone JavaScript. The stage contains exactly `index.html`, `app.js`, `style.css`, and `staticwebapp.config.json`. Never publish repo root or private artifacts.
+Hosted staging modifies the original UI for boutique account authentication, cloud messages, and lazy routes, and adds `/app.js?v=<content fingerprint>` to avoid stale phone JavaScript. The stage contains exactly `index.html`, `app.js`, `style.css`, and `staticwebapp.config.json`. Never publish repo root or private artifacts.
 
 ## Access and security boundaries
 
-Static Web Apps supplies authenticated platform identity. Backend independently requires provider `aad`, nonempty user ID, matching owner email (case-insensitive), and `boutique-owner` role. Plain authenticated login or a work account is insufficient. Authenticated owner invitation redemption is distinct from Azure CLI login used to deploy.
+Hosted APIs require a valid boutique session cookie and enabled account. Microsoft/GitHub platform identity cannot grant ledger access. Static Web Apps forwards API requests to the backend, which validates sessions before reading data. One owner administers accounts; invited members share full ledger read/write/backup/restore access. Account storage and endpoint protections are in [ACCOUNTS.md](ACCOUNTS.md). Azure CLI login for deployment remains separate from app access.
 
-Writes require JSON and the configured public origin. Functions settings are `BoutiqueSqlConnection`, `BoutiqueOwnerEmail`, `BoutiquePublicOrigin`. SQL application credentials have restricted grants, not administrator access. Public assets contain no ledger. Photos have the same owner protection as state.
+Writes require JSON and the configured public origin. Functions settings are `BoutiqueSqlConnection`, `BoutiqueOwnerEmail`, `BoutiquePublicOrigin`. Owner email is used for operator setup/recovery, not routine authentication. SQL application credentials have restricted grants, not administrator access. Public assets contain no ledger. Photos have the same boutique-session protection as state.
 
 Local access-code mode is trusted-LAN HTTP, with a stored code and cookie. It is not an internet hosting option. Respect managed-device/network restrictions.
 
@@ -76,3 +78,7 @@ Instagram URLs are restricted to HTTPS Instagram hosts, and embeds require suppo
 ## Financial change checklist
 
 Before altering a calculation, identify the shared JavaScript helper, both validators, applicable regression tests, and Requirements acceptance cases. Preserve historical opening-stock replacement, color allocation, reservation/oversell checks, refund effects, current-cost historical-profit behavior, cash inclusion, tax exclusion, and unknown-versus-zero postage. Schema/transport changes must preserve full backups and existing older records without variants.
+
+## Account authentication transition
+
+The account implementation replaces the previous platform-only data gates with backend-validated boutique sessions, stored separately from financial JSON. Its code/schema/API/protections are documented in [ACCOUNTS.md](ACCOUNTS.md). The account release is deployed; use HANDOFF for owner setup confirmation.

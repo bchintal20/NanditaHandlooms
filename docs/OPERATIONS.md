@@ -56,7 +56,7 @@ The optional cloud test `--sql` mode creates and drops a uniquely named disposab
 | Item | Value |
 | --- | --- |
 | Website | `https://gray-grass-0cab2cd10.6.azurestaticapps.net/` |
-| Personal owner | `bharath.chintalapani@gmail.com` |
+| Operator owner email | `bharath.chintalapani@gmail.com` |
 | Subscription | `ef6358bf-6180-4a31-a0e2-97b0a66dc438` |
 | Tenant | `99fe16c7-0092-41c3-8ca5-a7e3f7031788` |
 | Resource group | `rg-nandita-dev-cbbf` |
@@ -86,7 +86,7 @@ Windows PowerShell alternative: `powershell -ExecutionPolicy Bypass -File cloud/
 
 The script verifies the personal subscription/tenant, stages four public UI files, publishes the .NET API, uses SWA CLI 2.0.10 to upload production code, obtains the deployment token without printing it, clears the process token, and cleans its verified temporary staging path. It does not provision resources, change schema, or import business records.
 
-Completion checks: deployment exits successfully; staged assets match live assets; `/api/health` responds; anonymous state/backup/photo access remains blocked; the authorized owner loads inventory. Health alone cannot confirm SQL or owner access. Use isolated tests rather than creating fake production sales. The CLI has emitted an obsolete .NET 10 schema warning despite successful upload; an upload failure still requires investigation.
+Completion checks: deployment exits successfully; staged assets match live assets; `/api/health` responds; anonymous state/backup/photo access remains blocked; the authorized owner loads inventory. Health alone cannot confirm SQL or owner access. Use isolated tests rather than creating fake production sales. Boutique account tests and additive migration procedures are in ACCOUNTS.md; the account table must exist before deploying this release. The CLI has emitted an obsolete .NET 10 schema warning despite successful upload; an upload failure still requires investigation.
 
 Tokens, connection strings, invitation links, account caches, private exports, and logs remain in ignored local locations. Never print secrets or copy them into docs. Never publish the repository root.
 
@@ -101,8 +101,8 @@ Direct SQL operator diagnostics may need a temporary exact-client-IP firewall ru
 | Symptom | Check / action |
 | --- | --- |
 | Local phone 502, blank page, secure-connection error | Verify exact `http://computer-IP:8765/`, running WiFi-mode server, same private network, firewall and management restrictions. An nginx 502 page alone does not identify the Python app. |
-| Hosted account denied | Check `/.auth/me` in the same browser. Verify personal identity and `boutique-owner` role; never paste full identity payload/tokens into public logs. A valid fresh invitation may need redemption with that account. |
-| Invalid owner invitation | Generate/redeem a fresh invitation through the authorized owner setup workflow; invitation links are private and expire. CLI user-list output was not reliable proof of successful redemption during setup. |
+| Hosted sign-in needed | Sign in with the boutique email/password. Session may be expired/revoked. Use your recovery code or owner reset link when needed; Microsoft browser identity is unrelated. |
+| Invalid boutique invitation/reset link | Issue a fresh one-use 24-hour link through account management or operator owner recovery. Keep links private; an older link is invalid after replacement/activation. |
 | Loading / retrying | Check staged/live script fingerprint, then distinguish API worker health from authenticated state request. Examine SQL status/free limits and transient startup. Owner now confirmed the photo fix loads on phone. |
 | Many attached photos | Hosted UI must use lazy state + private images; backups still fetch full data. Confirm old JavaScript is not cached. Keep an eye on the full stored 15-MB limit. |
 | Save conflict | Refresh, reopen the form, reapply deliberate changes against the latest revision. Do not force an old snapshot over newer data. |
@@ -111,3 +111,7 @@ Direct SQL operator diagnostics may need a temporary exact-client-IP firewall ru
 | Profit seems too high | Verify postage is known, shipment costs are actual, tax excluded, shared shipping entered only once, and unresolved historical receipts reviewed. |
 
 If persistent hosted failures need diagnosis, gather status/timing and sanitized errors without exporting inventory into logs. Record what was actually verified and what remains uncertain in the handoff/history.
+
+## Boutique account maintenance
+
+Read [ACCOUNTS.md](ACCOUNTS.md) before changing authentication, grants, bootstrap, recovery, or route configuration. Account migration is additive, separate from ordinary code deployment, and preserves the business ledger. It was completed for the current cloud site. Do not repeat owner-invite against an activated owner; use owner-reset for recovery. Setup/reset links and recovery codes are credentials: keep them private.

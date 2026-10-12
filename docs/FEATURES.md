@@ -71,6 +71,10 @@ Same-quarter refunds reduce the taxable-sales worksheet. Earlier-quarter refunds
 
 Set boutique name, margin/markup method and percentage, default tax rate, and INR/USD exchange rate. New purchases retain their captured exchange rate. Download complete JSON backups with products, variants/photos, shipments, sales, returns, pending reviews, and settings. Restore replaces the whole ledger with revision checks.
 
-Business data lives on the server, not browser storage. Different devices using the same website share the ledger. Local and hosted modes have separate ledgers. Hosted mode has personal Microsoft owner sign-in/sign-out; local mode uses a console access code.
+Business data lives on the server, not browser storage. Different devices using the same website share the ledger. Local and hosted modes have separate ledgers. Hosted mode has boutique email/password sign-in/sign-out and remembered sessions; local mode uses a console access code.
 
 Hosted loading shows progress, retries transient failures, and exposes a useful error/manual refresh action. Authorization errors are not retried as database wake-up failures. Photos load when inventory is viewed rather than blocking initial overview.
+
+## Boutique accounts
+
+Independent email/password login, owner invitations, member access, remember-me, recovery codes, and account management are described in [ACCOUNTS.md](ACCOUNTS.md). This is deployed, and the owner confirmed successful password sign-in; check HANDOFF for verification details. Settings & backup contains the account controls. Microsoft/GitHub account selection is no longer needed to use the hosted ledger.

@@ -2,7 +2,7 @@
 
 Private inventory, pricing, sales, and quarterly tax-preparation application for a small California saree boutique. Track purchases in India, freight and duties to the USA, individual colors within a SKU, Instagram links, product photos, customer shipping, and profit.
 
-**Website:** [Open the boutique](https://gray-grass-0cab2cd10.6.azurestaticapps.net/). Sign in with the authorized personal Microsoft account. Cloud is the active shared ledger; the local app has a separate database.
+**Website:** [Open the boutique](https://gray-grass-0cab2cd10.6.azurestaticapps.net/). Sign in with your boutique email/password account. Microsoft/GitHub browser sessions are independent of this login. Cloud is the active shared ledger; the local app has a separate database.
 
 ## Documentation
 
@@ -14,6 +14,7 @@ Private inventory, pricing, sales, and quarterly tax-preparation application for
 | [Architecture](docs/ARCHITECTURE.md) | Code map, storage, APIs, authentication, concurrency, and photos. |
 | [Operations](docs/OPERATIONS.md) | Run locally, back up, test, deploy, and troubleshoot. |
 | [Change history](docs/CHANGELOG.md) | Implemented milestones, incidents, and verification evidence. |
+| [Accounts](docs/ACCOUNTS.md) | Sign-in, invitations, recovery, sessions, and account administration. |
 | [Agent instructions](AGENTS.md) | Context-reading and data-protection rules for coding agents. |
 
 Markdown is the source format: readable directly in Git or an editor, searchable by future chats, and maintained alongside code. Requirements define intended business behavior; the handoff records current operational status.
@@ -29,3 +30,5 @@ Python 3.10+ is required. Double-click **Start Boutique.bat** and enter the acce
 Git contains code and documentation, not business records. Local records live in `data/boutique.sqlite3`; hosted records live in Azure SQL. There is no automatic synchronization between them. Download full JSON backups from Settings & backup. A source clone alone cannot recover inventory or sales.
 
 The application records payment-method labels; payments happen outside it. All sales, including cash, participate in reporting. Quarterly worksheets support filing preparation, and the owner supplies actual tax and documented tax treatment.
+
+Boutique account usage and maintenance instructions: [docs/ACCOUNTS.md](docs/ACCOUNTS.md). Check Handoff for deployment status.

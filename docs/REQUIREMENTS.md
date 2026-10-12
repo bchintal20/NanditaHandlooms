@@ -27,7 +27,7 @@ There is one owner initially, very little ongoing read/write activity, and more 
 | Customer shipping | Record shipping income separately from actual postage expense and product revenue. |
 | Reporting | Show inventory, revenue, costs, profit, and quarterly CDTFA preparation worksheets/CSV. |
 | Recovery | Persist a shared ledger, download full backups, and restore with concurrency protection. |
-| Access | Responsive browser interface on computer and iPhone; private owner access for cloud records. |
+| Access | Responsive browser interface on computer and iPhone; private authorized boutique-account access for cloud records. |
 
 Payments are completed manually outside the app. Zelle, Venmo, Cash, and Other are descriptive labels, not payment integrations. Split-payment processing, gateway connections, reconciliation, and automatic fee capture are outside the current scope. Manual selling expenses are supported.
 
@@ -115,11 +115,11 @@ Ambiguous historical sales remain in Historical review. They reduce opening stoc
 - Reject stale writes so one device cannot silently overwrite another. Preserve transactional recovery history.
 - Compressed photos are embedded in the ledger; the current request limit is 15 MB. This design targets a small boutique, not a large image catalog.
 - Git tracks source and documentation. Business records, workbook seeds, backups, credentials, tokens, and generated private artifacts stay excluded. A source clone is not a data backup.
-- Local HTTP/access-code mode is for a trusted local network. Hosted mode requires HTTPS and owner authentication/authorization. Company network restrictions must be respected.
+- Local HTTP/access-code mode is for a trusted local network. Hosted mode requires HTTPS and boutique-account authentication/authorization. Company network restrictions must be respected.
 
 ## Current boundaries and acceptance examples
 
-Partial refunds, exchanges, voids, general stock adjustments, editing recorded sales beyond the shipping workflow, multiple staff roles, automated tax filing, and local/cloud synchronization are not implemented requirements for this version. Any expansion needs an explicit scope decision.
+Partial refunds, exchanges, voids, general stock adjustments, editing recorded sales beyond the shipping workflow, granular staff roles, automated tax filing, and local/cloud synchronization are not implemented requirements for this version. Any expansion needs an explicit scope decision.
 
 | Scenario | Expected result |
 | --- | --- |
@@ -157,3 +157,7 @@ Inventory loading must have a visible status. API/network failures must show an 
 
 ## Image-heavy inventory performance and preservation
 Cloud Overview must load inventory details without downloading every photo. Fetch photos privately on demand, retaining owner-only access. Editing inventory/sales/settings must preserve images omitted from transport. Backups and restore must contain original images, not temporary/private URLs. Keep legacy client/full backup behavior compatible. Original embedded image storage may remain server-side; keep local/cloud stores separate and do not overwrite either during performance fixes.
+
+## Boutique account access (authorized October 12, 2026)
+
+Hosted access uses invite-only boutique email/password accounts instead of routine Microsoft login, remembered sessions, and recovery codes/owner reset links. One owner manages member accounts; members share full ledger access. Full specification and security/operations are in [ACCOUNTS.md](ACCOUNTS.md). Local PIN access remains separate. This expands the earlier single-owner access scope; it does not add granular staff permissions.

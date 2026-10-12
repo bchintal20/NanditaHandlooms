@@ -14,10 +14,8 @@ public sealed class Endpoints
     [Function("Ledger")]
     public async Task<HttpResponseData> Ledger([HttpTrigger(AuthorizationLevel.Anonymous,"get","post",Route="{operation:regex(^(state|restore)$)}")]HttpRequestData req,string operation)
     {
-        var email=Environment.GetEnvironmentVariable("BoutiqueOwnerEmail");
-        if(string.IsNullOrWhiteSpace(email)) return await Reply(req,HttpStatusCode.ServiceUnavailable,new{error="Cloud access has not been configured"});
-        var principal=req.Headers.TryGetValues("x-ms-client-principal",out var values)?values.FirstOrDefault():null;
-        if(!Identity.IsOwner(principal,email)) return await Reply(req,HttpStatusCode.Forbidden,new{error="This account does not have access to the boutique"});
+        try { if(await AccountEndpoints.Authorize(req) is null)return await Reply(req,HttpStatusCode.Unauthorized,new{error="Sign in to your boutique."}); }
+        catch { return await Reply(req,HttpStatusCode.ServiceUnavailable,new{error="Account service is unavailable or waking up. Try again shortly."}); }
         var connection=Environment.GetEnvironmentVariable("BoutiqueSqlConnection");
         if(string.IsNullOrWhiteSpace(connection)) return await Reply(req,HttpStatusCode.ServiceUnavailable,new{error="Cloud storage has not been configured"});
         if(operation=="restore" && req.Method!="POST") return await Reply(req,HttpStatusCode.MethodNotAllowed,new{error="Use POST"});
@@ -55,9 +53,8 @@ public sealed class Endpoints
     }
     [Function("Photo")]
     public async Task<HttpResponseData> Photo([HttpTrigger(AuthorizationLevel.Anonymous,"get",Route="photo")]HttpRequestData req) {
-        var email=Environment.GetEnvironmentVariable("BoutiqueOwnerEmail");
-        var principal=req.Headers.TryGetValues("x-ms-client-principal",out var values)?values.FirstOrDefault():null;
-        if(!Identity.IsOwner(principal,email))return await Reply(req,HttpStatusCode.Forbidden,new{error="This account does not have access to the boutique"});
+        try { if(await AccountEndpoints.Authorize(req) is null)return await Reply(req,HttpStatusCode.Unauthorized,new{error="Sign in to your boutique."}); }
+        catch { return await Reply(req,HttpStatusCode.ServiceUnavailable,new{error="Account service is unavailable or waking up. Try again shortly."}); }
         try {
             var args=System.Web.HttpUtility.ParseQueryString(req.Url.Query);var pid=args["product"];var variant=args["variant"];
             if(string.IsNullOrWhiteSpace(pid))return await Reply(req,HttpStatusCode.BadRequest,new{error="Missing product"});

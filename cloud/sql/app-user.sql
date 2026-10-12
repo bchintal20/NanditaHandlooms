@@ -12,3 +12,6 @@ BEGIN
 END;
 GRANT SELECT, INSERT, UPDATE, DELETE ON dbo.BoutiqueLedger TO boutique_app;
 GRANT SELECT, INSERT, DELETE ON dbo.BoutiqueHistory TO boutique_app;
+
+IF OBJECT_ID('dbo.BoutiqueAccounts','U') IS NOT NULL
+GRANT SELECT, UPDATE ON dbo.BoutiqueAccounts TO boutique_app;

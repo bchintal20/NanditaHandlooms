@@ -5,6 +5,27 @@ using System.Data;
 var connection=Environment.GetEnvironmentVariable("BoutiqueSqlConnection")??throw new InvalidOperationException("Set BoutiqueSqlConnection in the process environment.");
 var store=new SqlLedgerStore(connection);
 if(args.Length==1 && args[0]=="setup") { await store.SetupAsync();Console.WriteLine("Schema ready."); }
+else if(args.Length==1 && args[0]=="setup-accounts") {
+    var b=new SqlConnectionStringBuilder(connection){Encrypt=true,TrustServerCertificate=false,Pooling=false};
+    await using var c=new SqlConnection(b.ConnectionString);await c.OpenAsync();
+    const string fingerprint="SELECT CONCAT(Revision,':',CONVERT(varchar(64),HASHBYTES('SHA2_256',CONVERT(varbinary(max),Payload)),2)) FROM dbo.BoutiqueLedger WHERE Id=1";
+    await using var check=new SqlCommand(fingerprint,c);var before=await check.ExecuteScalarAsync();
+    await using var q=new SqlCommand(SqlAccountStore.Schema,c);await q.ExecuteNonQueryAsync();
+    if(!Equals(before,await check.ExecuteScalarAsync()))throw new InvalidOperationException("Ledger changed during migration; inspect concurrent business writes.");
+    Console.WriteLine("Account schema and restricted grants ready; financial revision/payload unchanged.");
+}
+else if(args.Length==2 && args[0]=="owner-invite") {
+    // Save sensitive invitation to a private file; never print it into command logs.
+    var email=Environment.GetEnvironmentVariable("BoutiqueOwnerEmail")??throw new InvalidOperationException("Set BoutiqueOwnerEmail.");
+    var accounts=new SqlAccountStore(connection);
+    var token=await accounts.RunAsync(s=>BoutiqueAccounts.Invite(s,email,"Boutique owner","owner",DateTimeOffset.UtcNow),true);
+    await File.WriteAllTextAsync(args[1],token);Console.WriteLine("Owner setup token saved to private file.");
+}
+else if(args.Length==2 && args[0]=="owner-reset") {
+    var email=Environment.GetEnvironmentVariable("BoutiqueOwnerEmail")??throw new InvalidOperationException("Set BoutiqueOwnerEmail.");
+    var token=await new SqlAccountStore(connection).RunAsync(s=>BoutiqueAccounts.OwnerReset(s,email,DateTimeOffset.UtcNow),true);
+    await File.WriteAllTextAsync(args[1],token);Console.WriteLine("Owner reset token saved to private file.");
+}
 else if(args.Length==1 && args[0]=="provision-user") {
     var password=Environment.GetEnvironmentVariable("BoutiqueAppPassword")??throw new InvalidOperationException("Set BoutiqueAppPassword in the process environment.");
     if(password.Length<24 || password.Length>128) throw new ArgumentException("Use a generated app password between 24 and 128 characters.");
@@ -39,4 +60,4 @@ else if(args.Length==2 && args[0]=="import") {
     var stale=(JsonObject)actual.DeepClone();stale["revision"]=checked((long)LedgerValidator.N(stale,"revision",0,long.MaxValue,true)+1);
     try {await store.SaveAsync(stale);throw new InvalidOperationException("Stale save accepted");} catch(LedgerConflictException) {}
     Console.WriteLine("Verified source equivalence, restricted permissions, transactional rollback and stale-revision rejection; ledger unchanged.");
-} else throw new ArgumentException("Usage: setup | provision-user | import <backup.json> | verify <backup.json>. Import only works on an empty database.");
+} else throw new ArgumentException("Usage: setup | setup-accounts | owner-invite <private-token-file> | owner-reset <private-token-file> | provision-user | import <backup.json> | verify <backup.json>. Import only works on an empty database.");

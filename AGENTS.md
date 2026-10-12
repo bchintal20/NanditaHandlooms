@@ -12,3 +12,5 @@ Keep the repository in the owner's Documents/Repos location, outside OneDrive. P
 Azure actions must use the personal CLI profile and verified subscription in Operations; the default CLI session belongs to the employer. Routine code deployment uses `cloud/redeploy.ps1` and preserves records. Initial migration and infrastructure changes require separate scope review.
 
 On completion, update the relevant authoritative document and current handoff status. Put release history in CHANGELOG instead of appending contradictory setup/status instructions to HANDOFF. Report validation performed and remaining limits.
+
+Authentication, account migration, invitation/reset, or cookie changes: read [docs/ACCOUNTS.md](docs/ACCOUNTS.md). It supersedes historical platform-only authentication descriptions once deployment is confirmed.

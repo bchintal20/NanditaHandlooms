@@ -77,10 +77,19 @@ Environment.SetEnvironmentVariable("BoutiqueSqlConnection","not-a-connection"); 
 Environment.SetEnvironmentVariable("BoutiquePublicOrigin","https://boutique.example.com");
 var endpoints=new Endpoints();
 var health=await endpoints.Health(new Request("GET"));Check(health.StatusCode==HttpStatusCode.OK,"Health queried SQL");
-var denied=await endpoints.Ledger(new Request("GET"),"state");Check(denied.StatusCode==HttpStatusCode.Forbidden,"Anonymous endpoint allowed");
+var denied=await endpoints.Ledger(new Request("GET"),"state");Check(denied.StatusCode==HttpStatusCode.Unauthorized,"Anonymous endpoint allowed");
 var foreign=new Request("POST");foreign.Headers.Add("x-ms-client-principal",Principal("owner@example.com",["boutique-owner"]));foreign.Headers.Add("Origin","https://evil.example.com");foreign.Headers.Add("Content-Type","application/json");
-denied=await endpoints.Ledger(foreign,"state");Check(denied.StatusCode==HttpStatusCode.Forbidden,"Cross-origin write accepted");
-var photoDenied=await endpoints.Photo(new Request("GET"));Check(photoDenied.StatusCode==HttpStatusCode.Forbidden,"Anonymous photo access allowed");
+denied=await endpoints.Ledger(foreign,"state");Check(denied.StatusCode==HttpStatusCode.Unauthorized,"Cross-origin write accepted");
+var photoDenied=await endpoints.Photo(new Request("GET"));Check(photoDenied.StatusCode==HttpStatusCode.Unauthorized,"Anonymous photo access allowed");
+var accountEndpoints=new AccountEndpoints();
+foreach(var action in new[]{"login","activate","recover","invite","reset","disable","password","logout"}) {
+    var response=await accountEndpoints.Accounts(new Request("POST"),action);
+    Check(response.StatusCode==HttpStatusCode.Forbidden,"Cross-origin account mutation accepted: "+action);
+}
+var cookieRequest=new Request("GET");cookieRequest.Headers.Add("Cookie","__Host-boutique_session=invalid");
+Check(await AccountEndpoints.Authorize(cookieRequest) is null,"Malformed cookie accepted");
+var platformOnly=new Request("GET");platformOnly.Headers.Add("x-ms-client-principal",foreign.Headers.GetValues("x-ms-client-principal").First());
+Check((await endpoints.Ledger(platformOnly,"state")).StatusCode==HttpStatusCode.Unauthorized,"Microsoft principal bypassed boutique login");
 var remoteTest=new SqlLedgerStore("Server=cloud.database.windows.net;Database=x;Integrated Security=true",true);
 try{await remoteTest.ReadAsync();throw new Exception("Remote test-certificate override allowed");}catch(InvalidOperationException){checks++;}
 if(args.Contains("--sql")) {

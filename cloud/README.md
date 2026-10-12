@@ -1,7 +1,8 @@
 # Azure implementation
 
-Hosted UI and .NET API for Nandita Handlooms. The owner has confirmed access and phone Chrome loading after the lazy-photo fix.
+Hosted UI and .NET API for Nandita Handlooms. The owner confirmed phone Chrome loading after the lazy-photo fix. The hosted sign-in is now boutique email/password; the deployed account release and owner-confirmed password sign-in are tracked in HANDOFF.
 
+- [Boutique accounts and additive schema/recovery](../docs/ACCOUNTS.md)
 - [Architecture and API](../docs/ARCHITECTURE.md)
 - [Personal Azure profile, code deployment, tests, recovery, troubleshooting](../docs/OPERATIONS.md)
 - [Current handoff and outstanding limits](../docs/HANDOFF.md)
