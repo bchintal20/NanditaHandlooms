@@ -205,6 +205,21 @@ def validate(s):
         if group and sh['method'] == 'value' and sum(p['purchase'] * p['qty'] for p in group) == 0:
             raise ValueError('Value allocation needs purchase costs')
 
+def validate_changes(current, updated):
+    remaining = {p['id'] for p in updated['products']}
+    for p in current['products']:
+        if p['id'] in remaining:
+            continue
+        if p.get('reserved', 0) or p.get('openingSold', 0) or any(x['product'] == p['id'] for x in current['sales'] + current.get('pending', [])):
+            raise ValueError('Cannot delete inventory with reservations or sales/history records')
+    old_sales = {x['id']: x for x in current['sales']}
+    new_sales = {x['id']: x for x in updated['sales']}
+    for refund in current['returns']:
+        old, new = old_sales[refund['sale']], new_sales.get(refund['sale'])
+        if new is None or any(old.get(k, '') != new.get(k, '') for k in ('product', 'variant', 'qty')):
+            raise ValueError('Refunded sale product, color, and quantity cannot change')
+
+
 def save_state(s, restore=False):
     validate(s)
     with LOCK, connect() as con:
@@ -212,6 +227,8 @@ def save_state(s, restore=False):
         current = json.loads(con.execute('SELECT payload FROM ledger WHERE id=1').fetchone()[0])
         if s.get('revision') != current['revision']:
             raise RuntimeError('Another device changed the ledger. Refresh and try again.')
+        if not restore:
+            validate_changes(current, s)
         # Preserve a recovery copy before every change, including imports.
         backup = DATA / 'last-good-backup.json'
         temporary = DATA / 'backup-writing.tmp'

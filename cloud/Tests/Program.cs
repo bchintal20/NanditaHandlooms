@@ -14,6 +14,15 @@ void Check(bool ok,string message) {if(!ok)throw new Exception(message);checks++
 void Reject(JsonObject state,string message) {try{LedgerValidator.Validate(state);throw new Exception(message);}catch(ArgumentException){checks++;}}
 var source=JsonNode.Parse(await File.ReadAllTextAsync(args[0]))!.AsObject();
 var validated=LedgerValidator.Validate(source);
+var guardOld=(JsonObject)source.DeepClone();var guardP=(JsonObject)source["products"]![0]!.DeepClone();guardP["id"]="guarded";guardP["reserved"]=1;guardP["openingSold"]=0;guardOld["products"]!.AsArray().Add(guardP);
+var guardNew=(JsonObject)guardOld.DeepClone();guardNew["products"]!.AsArray().RemoveAt(guardNew["products"]!.AsArray().Count-1);
+try{LedgerValidator.ValidateChanges(guardOld,guardNew);throw new Exception("Reserved deletion accepted");}catch(ArgumentException){checks++;}
+guardP["reserved"]=0;LedgerValidator.ValidateChanges(guardOld,guardNew);checks++;
+guardOld["sales"]!.AsArray().Add(new JsonObject{["id"]="guard-sale",["product"]="guarded",["variant"]="",["qty"]=1,["price"]=50});
+try{LedgerValidator.ValidateChanges(guardOld,guardNew);throw new Exception("Sold batch deletion accepted");}catch(ArgumentException){checks++;}
+guardOld["returns"]!.AsArray().Add(new JsonObject{["id"]="guard-return",["sale"]="guard-sale"});guardNew=(JsonObject)guardOld.DeepClone();guardNew["sales"]!.AsArray().Last()!["price"]=55;LedgerValidator.ValidateChanges(guardOld,guardNew);checks++;
+guardNew["sales"]!.AsArray().Last()!["qty"]=2;try{LedgerValidator.ValidateChanges(guardOld,guardNew);throw new Exception("Refunded quantity edit accepted");}catch(ArgumentException){checks++;}
+
 Check(validated["sales"]!.AsArray().Count==source["sales"]!.AsArray().Count,"Sales lost in validation");
 Check(JsonNode.DeepEquals(source["pending"],validated["pending"]),"Pending review changed");
 var copy=(JsonObject)validated.DeepClone();copy["sales"]!.AsArray().Add(copy["sales"]![0]!.DeepClone());Reject(copy,"Duplicate sale accepted");

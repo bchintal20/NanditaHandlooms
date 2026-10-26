@@ -40,7 +40,7 @@ public sealed class Endpoints
             }
             var input=JsonNode.Parse(buffer.ToArray())?.AsObject()??throw new ArgumentException("Invalid ledger");
             if(operation=="restore"&&input["lazyPhotos"]?.GetValue<bool>()==true)throw new ArgumentException("Restore needs a full backup with photos");
-            var saved=await store.SaveAsync(input);
+            var saved=await store.SaveAsync(input,restore:operation=="restore");
             if(System.Web.HttpUtility.ParseQueryString(req.Url.Query)["photos"]=="lazy")return await Reply(req,HttpStatusCode.OK,LedgerPhotos.BrowserState(saved));
             return await Backup(req,saved);
         } catch(LedgerConflictException e) { return await Reply(req,HttpStatusCode.Conflict,new{error=e.Message}); }

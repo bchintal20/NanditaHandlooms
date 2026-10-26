@@ -75,6 +75,12 @@ Local access-code mode is trusted-LAN HTTP, with a stored code and cookie. It is
 
 Instagram URLs are restricted to HTTPS Instagram hosts, and embeds require supported post/reel/TV paths. CSP permits the selected Instagram frame host and self/data images. User/customer data is escaped in UI/CSV; source notes never authorize actions.
 
+## Sale corrections and product deletion
+
+The shared `saleForm(pid, saleId)` handles new sales and edits. `suggestedSaleAmounts` uses the same `roundedLabelPrice` as inventory/labels, splitting the multiplied gross amount into net product revenue and tax. Edits retain the sale ID and original fields; availability temporarily credits back the edited sale's quantity unless its refund already restocked it. No ledger schema migration is needed.
+
+Python `validate_changes(current, updated)` and C# `LedgerValidator.ValidateChanges` enforce transition rules in addition to whole-ledger validation. Ordinary saves reject removal of products with current sales, historical-review references, opening sold stock, or reservations. Existing refunded sales must remain present with the same product/color/quantity; their amount changes flow through derived full-refund calculations. Both hosts retain revision checks and save history. Explicit backup restore bypasses these transition-only restrictions because it intentionally replaces the ledger, but still requires authentication, current revision, and valid full-state data. C# `SaveAsync(..., restore: true)` is used only by the restore endpoint.
+
 ## Financial change checklist
 
 Before altering a calculation, identify the shared JavaScript helper, both validators, applicable regression tests, and Requirements acceptance cases. Preserve historical opening-stock replacement, color allocation, reservation/oversell checks, refund effects, current-cost historical-profit behavior, cash inclusion, tax exclusion, and unknown-versus-zero postage. Schema/transport changes must preserve full backups and existing older records without variants.

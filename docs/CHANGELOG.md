@@ -2,6 +2,12 @@
 
 This is historical context. Current state is in [Handoff](HANDOFF.md); routine procedures are in [Operations](OPERATIONS.md). These milestones summarize earlier accumulated session notes, rather than instructing a new chat to repeat setup.
 
+## October 26, 2026 — sale maintenance and inventory cleanup
+
+Added in-place sales correction with original-value preservation, stock recalculation, and refunded-sale structural restrictions. New sales default product revenue and tax from the rounded .99 customer label price; manual overrides and the tax-extraction button remain available. Added confirmed deletion for unused/test inventory, protected against sales/history/reservation references, with a shared-shipment cost warning. Python and C# now validate these state transitions; explicit backup restore retains its replacement semantics. No schema migration or business-data import was performed.
+
+Passed synthetic desktop/mobile sale-maintenance tests, existing variant/media/oversell tests, 8 Python tests, and 55 C# checks. Updated Requirements, Features, Architecture, Operations, and Handoff. The owner confirmed the local result and subsequently authorized commit, push, and Azure deployment. Release verification is pending.
+
 ## Local ledger and workbook migration
 
 Built purchase-batch inventory, procurement/shipment allocations, adjustable margin/markup MSRP, manual sales/payment labels, tax-exclusive revenue/profit, full refunds, quarterly CSV, historical review, access code, and full JSON recovery. Initial workbook import preserved 22 batches, 58 received pieces, 15 opening sold pieces, and 43 on hand, including cached landed-cost allocations. These are **initial import figures**, not current inventory.

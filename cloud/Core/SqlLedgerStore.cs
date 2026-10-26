@@ -92,7 +92,7 @@ public sealed class SqlLedgerStore(string connectionString, bool trustLocalTestC
         if(variant is not null)q.Parameters.Add("@variant",SqlDbType.NVarChar,-1).Value=variant;
         return await q.ExecuteScalarAsync() as string;
     }
-    public async Task<JsonObject> SaveAsync(JsonObject input,bool import=false) {
+    public async Task<JsonObject> SaveAsync(JsonObject input,bool import=false,bool restore=false) {
         var s=import?LedgerValidator.Validate(input):(JsonObject)input.DeepClone();
         var revision=checked((long)LedgerValidator.N(input,"revision",0,long.MaxValue,true));
         await using var c=Connection();await c.OpenAsync();
@@ -110,6 +110,7 @@ public sealed class SqlLedgerStore(string connectionString, bool trustLocalTestC
             if(currentRevision is null) throw new LedgerNotInitializedException();
             if(currentRevision!=revision) throw new LedgerConflictException();
             s=LedgerValidator.Validate(LedgerPhotos.ResolveForSave(s,JsonNode.Parse(currentJson!)!.AsObject()));
+            if(!restore)LedgerValidator.ValidateChanges(JsonNode.Parse(currentJson!)!.AsObject(),s);
             if(System.Text.Encoding.UTF8.GetByteCount(s.ToJsonString())>15000000)throw new LedgerTooLargeException();
             await using var history=new SqlCommand("INSERT dbo.BoutiqueHistory(Revision,Payload) VALUES(@revision,@payload)",c,tx);
             history.Parameters.Add("@revision",SqlDbType.BigInt).Value=revision;

@@ -3,6 +3,21 @@ using System.Text.Json.Nodes;
 namespace Boutique.Core;
 public static class LedgerValidator
 {
+    public static void ValidateChanges(JsonObject current, JsonObject updated) {
+        var ids=updated["products"]!.AsArray().Select(p=>Text(p!.AsObject(),"id")).ToHashSet();
+        foreach(var row in current["products"]!.AsArray()) {
+            var p=row!.AsObject();var id=Text(p,"id");if(ids.Contains(id))continue;
+            if(N(p,"reserved")>0||N(p,"openingSold")>0||current["sales"]!.AsArray().Concat(current["pending"]!.AsArray()).Any(x=>Text(x!.AsObject(),"product")==id))
+                Fail("Cannot delete inventory with reservations or sales/history records");
+        }
+        var before=current["sales"]!.AsArray().ToDictionary(x=>Text(x!.AsObject(),"id"));
+        var after=updated["sales"]!.AsArray().ToDictionary(x=>Text(x!.AsObject(),"id"));
+        foreach(var refund in current["returns"]!.AsArray()) {
+            var id=Text(refund!.AsObject(),"sale");
+            if(!after.TryGetValue(id,out var sale)||new[]{"product","variant","qty"}.Any(key=>!JsonNode.DeepEquals(before[id]![key],sale![key])&&!(key=="variant"&&Optional(before[id]!.AsObject(),key,"")==Optional(sale!.AsObject(),key,""))))
+                Fail("Refunded sale product, color, and quantity cannot change");
+        }
+    }
     public static JsonObject Validate(JsonObject input)
     {
         var s = (JsonObject)input.DeepClone();

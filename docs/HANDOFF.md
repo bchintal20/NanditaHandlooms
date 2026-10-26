@@ -1,6 +1,14 @@
 # Start here: future chat handoff
 
-## Current status
+## October 26, 2026 release
+
+Implemented sale editing, automatic .99 tax-inclusive sale defaults, and confirmed deletion of unused inventory, with matching Python/C# protections. The owner tested the local changes, confirmed they look good, and authorized committing, pushing, and deploying on October 26. Release execution is in progress; update this status with deployment evidence when complete.
+
+New sales split the rounded label total into product revenue/tax; existing sale edits preserve actual amounts. Fully refunded sales keep batch/color/quantity fixed, with amount corrections affecting derived refunds. Inventory deletion is blocked by sales, historical references/opening sold quantity, and reservations. Shared-shipment deletion can reallocate costs. Details are in Requirements, Features, and Architecture.
+
+Verification: synthetic sale-maintenance browser checks passed at desktop and phone widths; existing variant/photo/oversell checks passed; Python suite passed 8 tests; C# ledger suite passed 55 checks. These tests use isolated data and do not modify active business records. Use Operations for local testing. Local owner acceptance is confirmed. Cloud deployment verification remains pending.
+
+## Deployed baseline
 
 The application is implemented and deployed at [Nandita Handlooms](https://gray-grass-0cab2cd10.6.azurestaticapps.net/). The original Microsoft-access deployment was owner-confirmed. Hosted access was replaced on October 12, 2026 with invite-only boutique email/password accounts; the account release is deployed and its anonymous/forged-session/origin gates are verified. The owner confirmed successful sign-in using the new password. Authenticated inventory display was not separately stated in that confirmation. After the image-heavy loading fix, the owner also confirmed that the website loaded on phone Chrome. This replaces earlier notes saying phone confirmation was pending.
 
@@ -46,7 +54,7 @@ Cloud startup now retrieves metadata separately from photos. Inventory photos ar
 - Instagram embeds depend on public-post availability and Instagram restrictions. Real-world embed availability is not guaranteed; uploaded photos are dependable.
 - New lazy-photo save behavior has isolated tests and a read-only live roundtrip check. Phone loading is owner-confirmed; no live business transaction was written just to test the release.
 - Actual customer postage can remain missing; profit is flagged incomplete until supplied.
-- General sale editing, partial refunds/exchanges, arbitrary stock adjustments, payment integrations, granular staff permissions, automated tax filing, offline phone mode, and automatic local/cloud sync are outside current scope.
+- Partial refunds/exchanges, arbitrary stock adjustments, payment integrations, granular staff permissions, automated tax filing, offline phone mode, and automatic local/cloud sync are outside current scope.
 - Tests currently depend in part on ignored private fixtures and the builder computer's Playwright runtime. A clean clone requires fixtures/runtime setup; synthetic fixture portability is future maintenance work.
 - Full encoded ledger limit remains 15 MB. Lazy transport reduces page-load size, not stored photos or whole-ledger save costs. Consider separately stored images if the catalog outgrows this design.
 
@@ -77,4 +85,4 @@ Owner authorized implementation, Azure deployment, and GitHub push. Added durabl
 
 ## Sale modal identification previews
 
-Product/batch and color selectors now have adjacent 72-pixel previews, updated when either selection changes. Selected variant images suppress duplicate SKU previews. With no selected variant photo, the actual batch photo may appear; missing or failed previews are hidden completely. Verified desktop/mobile selection changes, fallbacks, overflow, and existing sale/oversell behavior using isolated data. Deployed to Azure and verified live assets and protected API gates. No business records changed. Latest compact inventory styling and this feature remain in the working tree until the next source checkpoint.
+Product/batch and color selectors now have adjacent 72-pixel previews, updated when either selection changes. Selected variant images suppress duplicate SKU previews. With no selected variant photo, the actual batch photo may appear; missing or failed previews are hidden completely. Verified desktop/mobile selection changes, fallbacks, overflow, and existing sale/oversell behavior using isolated data. Deployed to Azure and verified live assets and protected API gates. No business records changed. Latest compact inventory styling and this feature were included in source checkpoint b56efbc. The October 26 changes described above are a separate uncommitted local update.

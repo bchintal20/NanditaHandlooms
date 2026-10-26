@@ -39,6 +39,7 @@ dotnet run --project cloud/Tests/Boutique.Tests.csproj -- .artifacts/migration-l
 python cloud/build_ui.py
 node cloud/test_ui.cjs
 node test_variants_ui.cjs
+node test_sales_maintenance_ui.cjs
 node test_labels_ui.cjs
 node test_startup_ui.cjs
 node test_lazy_photos_ui.cjs
@@ -52,6 +53,20 @@ Prerequisites: Python, Node.js, .NET 10 SDK for cloud code, and Playwright for b
 `cloud/export_ledger.py` creates a private export of **local** data. It does not fetch the active cloud ledger. Existing local export can be a test fixture but must never be mistaken for current production data.
 
 The optional cloud test `--sql` mode creates and drops a uniquely named disposable local SQL Server database. It is not a routine production check; use only an explicitly isolated local environment. Default tests above avoid that mode. Label tests can use `BOUTIQUE_SITE_ROOT=.artifacts/site` to exercise staged CSP.
+
+## Testing the October 26 local changes
+
+The owner authorized cloud release after local acceptance on October 26; check Handoff for deployment status. The Python and hosted C# implementations share the updated UI; testing localhost does not update Azure. Local records remain separate from the active cloud ledger.
+
+`test_sales_maintenance_ui.cjs` supplies synthetic fixtures without private imports and checks desktop/phone sale defaults, manual overrides, sold-out batch/color corrections, oversell rejection, refunded-sale limits, and deletion guards. Python and C# tests cover corresponding transition protections.
+
+For an owner walkthrough, use a disposable test batch: verify its Sell form matches the .99 label total, save a test sale, correct it through Sales → Edit, and verify the same entry changes. Deletion should be refused once that batch has a sale. Use a second unused batch to test confirmed deletion. Avoid test entries in the active business ledger; use an isolated copy or rely on the automated fixture tests. No test business entries were added by this change.
+
+If `python` is missing from PATH on the builder computer, run its installed interpreter explicitly:
+
+```powershell
+& "$env:LOCALAPPDATA\Programs\Python\Python313\python.exe" server.py --no-browser
+```
 
 ## Personal Azure environment
 

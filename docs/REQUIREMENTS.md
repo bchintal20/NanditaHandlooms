@@ -62,6 +62,16 @@ At $50 cost and 50% markup, suggested price is $75. The legacy workbook's 50% ca
 
 MSRP is a pricing suggestion, not a manufacturer-supplied retail price. Actual sale prices may differ after discounts. Tax-inclusive suggestions and a rounded .99 display price are convenience outputs; tax collected on a real sale is recorded separately.
 
+## Sale defaults, corrections, and inventory removal
+
+New sales, including Inventory → Sell, start from the displayed rounded tax-inclusive .99 price per piece multiplied by quantity. Split that product total into pre-tax revenue and collected tax using the configured tax rate: revenue = round(total / (1 + rate / 100)); tax = total − revenue. Tax on any taxable customer shipping is additional. For $50 landed cost, 50% margin, and 8.75% tax, the $108.99 label defaults to $100.22 product revenue and $8.77 tax; two pieces total $217.98. Nontaxable sales default zero tax and require a reason. These remain editable suggestions, not a determination of tax liability.
+
+While the new-sale suggestion is active, quantity/product/tax-treatment changes recalculate defaults. Manually changing product total or tax preserves the entered amounts until **Use suggested price** is selected. Keep **Extract tax from total paid** for manual use.
+
+Recorded sales can be edited in place, preserving their ID and existing amounts until deliberately changed. Validate corrected stock, batch/color allocation, and reservations without subtracting the original sale twice. Corrections update reports for the recorded sale date. A fully refunded sale permits detail and amount corrections but keeps batch, color, and quantity fixed; corrected amounts also change its derived full refund. Sale date cannot be after its refund date. Preserve filed-quarter exports before correcting old records.
+
+Unused/test purchase batches can be deleted after confirmation, including their variants/photos. Block deletion when the batch has recorded sales (including refunded sales), opening historical sold quantity, any pending historical-review reference, or reservations. Release reservations in a separate saved edit first. Removing a batch from a shared shipment reallocates that shipment's costs across remaining batches and can change their suggested prices and historical profit. Deletion is not a stock write-off or a way to erase transaction history.
+
 ## Sales, tax, and profit
 
 - One sale entry identifies one product batch. Its product price is the total for the sold quantity, after discounts and before tax, not a per-piece price.
@@ -119,7 +129,7 @@ Ambiguous historical sales remain in Historical review. They reduce opening stoc
 
 ## Current boundaries and acceptance examples
 
-Partial refunds, exchanges, voids, general stock adjustments, editing recorded sales beyond the shipping workflow, granular staff roles, automated tax filing, and local/cloud synchronization are not implemented requirements for this version. Any expansion needs an explicit scope decision.
+Partial refunds, exchanges, voids, general stock adjustments, granular staff roles, automated tax filing, and local/cloud synchronization are not implemented requirements for this version. Any expansion needs an explicit scope decision.
 
 | Scenario | Expected result |
 | --- | --- |

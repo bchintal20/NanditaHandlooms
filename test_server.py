@@ -48,6 +48,22 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.request('/api/state', cookie=cookie)[0], 401)
         self.assertEqual(before, self.m.read_state())
 
+    def test_inventory_deletion_and_refund_edit_guards(self):
+        old=copy.deepcopy(self.seed)
+        p=copy.deepcopy(old['products'][0]);p.update(id='guarded',reserved=1,openingSold=0)
+        old['products'].append(p)
+        new=copy.deepcopy(old);new['products']=[p for p in new['products'] if p['id']!='guarded']
+        with self.assertRaisesRegex(ValueError,'Cannot delete'): self.m.validate_changes(old,new)
+        old['products'][-1]['reserved']=0
+        self.m.validate_changes(old,new)
+        old['sales'].append(dict(id='guard-sale',product='guarded',variant='',qty=1,price=50,tax=0))
+        with self.assertRaisesRegex(ValueError,'Cannot delete'): self.m.validate_changes(old,new)
+        old['returns'].append(dict(id='guard-return',sale='guard-sale',restock=True,date='2026-10-05'))
+        new=copy.deepcopy(old);new['sales'][-1]['price']=55
+        self.m.validate_changes(old,new)
+        new['sales'][-1]['qty']=2
+        with self.assertRaisesRegex(ValueError,'Refunded sale'): self.m.validate_changes(old,new)
+
     def test_variants_stock_media_and_legacy(self):
         seed=copy.deepcopy(self.seed)
         p=copy.deepcopy(seed['products'][0]);p.update(id='colors',qty=10,reserved=0,openingSold=0,shipment='',variants=[dict(id='red',name='Red',qty=3),dict(id='blue',name='Blue',qty=5)])
