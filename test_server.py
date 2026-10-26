@@ -27,6 +27,30 @@ class ServerTests(unittest.TestCase):
         cls.server.shutdown()
         cls.server.server_close()
         cls.tmp.cleanup()
+    def test_business_expenses(self):
+        ledger = self.m.empty_state()
+        entry = dict(id='fee1', date='2026-10-15', description='Event fee', category='Event vendor fee', payee='Festival', payment='Card', amount=125.50, notes='Receipt 1')
+        ledger['businessExpenses'] = [entry]
+        self.m.validate(ledger)
+        for key, value in [('amount', -1), ('amount', 0), ('amount', 1.234), ('amount', True), ('date', 'bad'), ('description', ''), ('category', ' '), ('payment', 'invalid'), ('notes', 'x' * 2001)]:
+            bad = copy.deepcopy(ledger)
+            bad['businessExpenses'][0][key] = value
+            with self.assertRaises((ValueError, TypeError)):
+                self.m.validate(bad)
+        duplicate = copy.deepcopy(ledger)
+        duplicate['businessExpenses'].append(copy.deepcopy(entry))
+        with self.assertRaises(ValueError): self.m.validate(duplicate)
+        old = self.m.empty_state(); del old['businessExpenses']
+        self.m.validate(old); self.assertEqual(old['businessExpenses'], [])
+        original = self.m.read_state()
+        ledger['revision'] = original['revision']
+        try:
+            self.m.save_state(ledger, restore=True)
+            self.assertEqual(self.m.read_state()['businessExpenses'], [entry])
+        finally:
+            with self.m.connect() as con:
+                con.execute('UPDATE ledger SET payload=? WHERE id=1', (json.dumps(original),))
+
     def request(self, path, body=None, cookie=None, origin=True):
         con = http.client.HTTPConnection('127.0.0.1', self.port)
         headers = {'Content-Type':'application/json'}

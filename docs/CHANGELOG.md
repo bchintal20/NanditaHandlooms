@@ -73,3 +73,7 @@ Added adjacent 72-pixel product/color thumbnails in Record a sale. Product chang
 Selected variant photos now suppress the SKU/batch thumbnail. If a variant has no photo, only an actual batch photo is used; no other color is substituted. Missing/failed previews are hidden, including their empty layout column. No photo placeholders or duplicated batch fallback beside the color selector remain.
 
 Sale-preview cleanup is deployed to Azure; desktop/mobile checks and live asset/access verification passed.
+
+## October 26, 2026 — miscellaneous expenses
+
+Added standalone event/vendor and other overhead expense records, add/edit/delete, all-time and quarter profit impact, and expense CSV exports. Both hosts validate the optional JSON array; no schema migration. Passed 9 Python tests, 67 C# checks, desktop/mobile expense add/edit/reload/delete and quarterly CSV/full backup, sale-maintenance and financial regressions, staged cloud navigation, and lazy-photo preservation. Deployment pending; no business records were created by these tests.

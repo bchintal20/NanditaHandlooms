@@ -60,3 +60,14 @@ assert.equal(run("mediaFor(product('p')).photo"),'parent');
 assert.equal(run("mediaFor(product('p'),product('p').variants[0]).photo"),'red');
 run("state.products[0].photo=''");assert.equal(run("mediaFor(product('p')).photo"),'red');
 console.log('Label and preview tests passed: .99 boundaries, inclusive tax, safe Instagram URLs, photo fallback.');
+
+// Standalone overhead affects profit only, and follows its payment date.
+run("state.businessExpenses=[{date:'2026-09-30',amount:125.5},{date:'2026-10-01',amount:25}];currentYear='2026';currentQuarter='4'");
+const withoutOverhead=run('stats(state.sales,state.returns)');
+near(run('stats(state.sales,state.returns,state.businessExpenses).profit'),withoutOverhead.profit-150.5);
+near(run('stats(state.sales,state.returns,state.businessExpenses.filter(e=>inQuarter(e.date))).miscExpenses'),25);
+near(run('stats(state.sales,state.returns,state.businessExpenses).tax'),withoutOverhead.tax);
+near(run('stats(state.sales,state.returns,state.businessExpenses).revenue'),withoutOverhead.revenue);
+console.log('Expense calculations passed: overhead profit, quarter boundaries, unchanged sales/tax.');
+
+near(run('stats([],[],state.businessExpenses).profit'),-150.5);

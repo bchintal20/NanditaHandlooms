@@ -82,7 +82,7 @@ Unused/test purchase batches can be deleted after confirmation, including their 
 - All payment methods, including cash, participate in inventory, profit, and quarterly reporting. Payment method does not determine taxability. There is no off-books reporting mode.
 - Nontaxable sales need a documented reason and zero collected tax. Taxability is entered by the owner; the application does not infer legal eligibility from customer name, payment method, or address alone.
 - Use actual tax collected when known. When extracting included tax at a known applicable rate: net amount = total / (1 + rate / 100); included tax = total − net amount. Do not calculate included tax as total × rate.
-- Product gross profit = product revenue − landed cost of sold pieces. Profit after expenses = product revenue + shipping income − landed cost of sold pieces − selling expenses − actual postage expense, adjusted for returns.
+- Product gross profit = product revenue − landed cost of sold pieces. Profit after expenses = product revenue + shipping income − landed cost of sold pieces − selling expenses − actual postage expense − miscellaneous business expenses, adjusted for returns.
 - Profit uses current batch landed costs. Finalizing historical costs changes historical profit; preserve exports used for filed quarters. Unrecorded overhead and income taxes are outside this calculation.
 
 ## Customer shipping
@@ -171,3 +171,7 @@ Cloud Overview must load inventory details without downloading every photo. Fetc
 ## Boutique account access (authorized October 12, 2026)
 
 Hosted access uses invite-only boutique email/password accounts instead of routine Microsoft login, remembered sessions, and recovery codes/owner reset links. One owner manages member accounts; members share full ledger access. Full specification and security/operations are in [ACCOUNTS.md](ACCOUNTS.md). Local PIN access remains separate. This expands the earlier single-owner access scope; it does not add granular staff permissions.
+
+## Miscellaneous business expenses
+
+Record standalone overhead paid in USD, including event vendor fees, advertising, supplies, travel, and other expenses. Capture stable ID, date paid, description, category, optional payee/event, payment label, positive amount with at most two decimals, and optional notes/receipt reference. Add, edit, and confirm deletion. Expenses reduce all-time profit and profit for their payment quarter, including quarters with no sales; they never change gross product profit, inventory cost, suggested labels, sales receipts, or collected tax. Do not double-count fees already captured in products, shipments, or sale expenses. No receipt-file upload, recurring expense automation, or vendor payment processing is included. Business expense entries are exported separately from sales values in the quarterly CSV; this feature does not treat overhead as a sales-tax deduction.

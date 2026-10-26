@@ -26,6 +26,14 @@ public static class LedgerValidator
         var products = Rows(s, "products"); var shipments = Rows(s, "shipments");
         var sales = Rows(s, "sales"); var returns = Rows(s, "returns"); var pending = Rows(s, "pending");
         var pm = products.ToDictionary(x => Text(x,"id")); var sm = shipments.ToDictionary(x => Text(x,"id"));
+        if(!s.ContainsKey("businessExpenses"))s["businessExpenses"]=new JsonArray();
+        foreach(var e in Rows(s,"businessExpenses")) {
+            Date(e,"date");var amount=N(e,"amount",.01m);if(decimal.Round(amount,2)!=amount)Fail("Expense amount must have at most two decimal places");
+            foreach(var (key,limit) in new[]{("description",160),("category",80),("payee",160),("notes",2000)}) {
+                if(e[key] is not JsonValue value || !value.TryGetValue<string>(out var text) || text.Length>limit || ((key=="description"||key=="category")&&string.IsNullOrWhiteSpace(text)))Fail("Invalid expense "+key);
+            }
+            if(!new[]{"Zelle","Venmo","Cash","Card","Bank transfer","Other"}.Contains(Text(e,"payment")))Fail("Invalid expense payment method");
+        }
         var settings = s["settings"]!.AsObject();
         N(settings,"margin",0,99.9m); N(settings,"tax",0,30); N(settings,"exchange",0.000001m);
         if (!new[]{"margin","markup"}.Contains(Optional(settings,"pricing","margin"))) Fail("Invalid pricing mode");

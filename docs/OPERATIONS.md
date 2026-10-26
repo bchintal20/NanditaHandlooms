@@ -134,3 +134,7 @@ If persistent hosted failures need diagnosis, gather status/timing and sanitized
 Read [ACCOUNTS.md](ACCOUNTS.md) before changing authentication, grants, bootstrap, recovery, or route configuration. Account migration is additive, separate from ordinary code deployment, and preserves the business ledger. It was completed for the current cloud site. Do not repeat owner-invite against an activated owner; use owner-reset for recovery. Setup/reset links and recovery codes are credentials: keep them private.
 
 Default settings show inline Saving…, timestamped success, Unsaved changes, and Not saved errors. The header Log out revokes the current session and returns to sign-in. After Python backend updates restart the local server; refreshing alone loads frontend changes but does not reload server routes.
+
+## Expense release checks
+
+Run `node test_expenses_ui.cjs`, `node test_calculations.js`, Python server tests, and the C# ledger suite for expense changes. The browser check uses synthetic fixtures for add/edit/reload/delete, quarter selection/export, and unchanged tax worksheet. Backups include businessExpenses; restoring an older full backup without that array intentionally replaces it with no expenses. Do not restore old backups as a code-deployment step. Existing dependency advisories remain a separate maintenance issue.

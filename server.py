@@ -38,7 +38,7 @@ def connect():
 
 def empty_state():
     return dict(version=1, revision=0, products=[], shipments=[], sales=[], returns=[],
-                pending=[], settings=dict(name='Nandita Handlooms', margin=50, pricing='margin', tax=0, exchange=90))
+                pending=[], businessExpenses=[], settings=dict(name='Nandita Handlooms', margin=50, pricing='margin', tax=0, exchange=90))
 
 with connect() as con:
     con.execute('CREATE TABLE IF NOT EXISTS ledger (id INTEGER PRIMARY KEY CHECK (id=1), payload TEXT NOT NULL)')
@@ -59,12 +59,24 @@ def date(value):
 def validate(s):
     if s.get('version') != 1:
         raise ValueError('Unsupported backup version')
-    for key in ('products', 'shipments', 'sales', 'returns'):
+    s.setdefault('businessExpenses', [])
+    for key in ('products', 'shipments', 'sales', 'returns', 'businessExpenses'):
         if not isinstance(s.get(key), list) or len(s[key]) > 100000:
             raise ValueError('Invalid ' + key)
         ids = [x.get('id') for x in s[key]]
         if any(not isinstance(i, str) or not i for i in ids) or len(ids) != len(set(ids)):
             raise ValueError('Duplicate or invalid record IDs')
+    for expense in s['businessExpenses']:
+        date(expense['date'])
+        number(expense.get('amount'), 'Expense amount', .01)
+        if abs(expense['amount'] * 100 - round(expense['amount'] * 100)) > .0001:
+            raise ValueError('Expense amount must have at most two decimal places')
+        for key, limit in (('description', 160), ('category', 80), ('payee', 160), ('notes', 2000)):
+            value = expense.get(key)
+            if not isinstance(value, str) or len(value) > limit or (key in ('description', 'category') and not value.strip()):
+                raise ValueError('Invalid expense ' + key)
+        if expense.get('payment') not in ('Zelle', 'Venmo', 'Cash', 'Card', 'Bank transfer', 'Other'):
+            raise ValueError('Invalid expense payment method')
     number(s['settings']['margin'], 'Margin', 0, 99.9)
     number(s['settings']['tax'], 'Tax rate', 0, 30)
     number(s['settings']['exchange'], 'Exchange rate', .000001)

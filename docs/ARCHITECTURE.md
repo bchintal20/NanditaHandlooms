@@ -88,3 +88,7 @@ Before altering a calculation, identify the shared JavaScript helper, both valid
 ## Account authentication transition
 
 The account implementation replaces the previous platform-only data gates with backend-validated boutique sessions, stored separately from financial JSON. Its code/schema/API/protections are documented in [ACCOUNTS.md](ACCOUNTS.md). The account release is deployed; use HANDOFF for owner setup confirmation.
+
+## Standalone expense records
+
+Optional top-level `businessExpenses` is an array of `{id,date,description,category,payee,payment,amount,notes}`. Legacy ledgers/backups without the array mean no expenses; Python and C# validators supply an empty list on save/validation. IDs are unique, date is valid, amount is positive with at most two decimal places; descriptions/category are required with bounded text. The shared UI reads missing arrays safely. This additive JSON field uses existing full-state revision/history/save/backup/restore and lazy-photo transport; no SQL schema migration or new endpoint is needed. `stats(sales, returns, businessExpenses=[])` receives all expenses for Overview and date-filtered expenses for Quarterly report; sale-specific previews remain independent. Quarterly CSV appends miscellaneous expense/category/payee columns; Business expense rows leave revenue/tax/COGS fields blank.

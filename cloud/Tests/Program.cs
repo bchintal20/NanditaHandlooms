@@ -14,6 +14,15 @@ void Check(bool ok,string message) {if(!ok)throw new Exception(message);checks++
 void Reject(JsonObject state,string message) {try{LedgerValidator.Validate(state);throw new Exception(message);}catch(ArgumentException){checks++;}}
 var source=JsonNode.Parse(await File.ReadAllTextAsync(args[0]))!.AsObject();
 var validated=LedgerValidator.Validate(source);
+var expenseLedger=(JsonObject)source.DeepClone();
+expenseLedger["businessExpenses"]=JsonNode.Parse("""[{"id":"fee1","date":"2026-10-15","description":"Event vendor fee","category":"Event vendor fee","payee":"Festival","payment":"Card","amount":125.50,"notes":"Receipt"}]""");
+var checkedExpenses=LedgerValidator.Validate(expenseLedger);Check(JsonNode.DeepEquals(expenseLedger["businessExpenses"],checkedExpenses["businessExpenses"]),"Expenses changed");
+Check(JsonNode.DeepEquals(expenseLedger["businessExpenses"],LedgerPhotos.BrowserState(checkedExpenses)["businessExpenses"]),"Metadata lost expenses");
+Check(JsonNode.DeepEquals(expenseLedger["businessExpenses"],LedgerPhotos.ResolveForSave(LedgerPhotos.BrowserState(checkedExpenses),checkedExpenses)["businessExpenses"]),"Photo save lost expenses");
+foreach(var amount in new[]{-1m,0m,1.234m}){var bad=(JsonObject)expenseLedger.DeepClone();bad["businessExpenses"]![0]!["amount"]=amount;Reject(bad,"Invalid expense accepted");}
+var badExpense=(JsonObject)expenseLedger.DeepClone();badExpense["businessExpenses"]!.AsArray().Add(badExpense["businessExpenses"]![0]!.DeepClone());Reject(badExpense,"Duplicate expense accepted");
+foreach(var key in new[]{"date","description","category","payment"}){badExpense=(JsonObject)expenseLedger.DeepClone();badExpense["businessExpenses"]![0]![key]="";Reject(badExpense,"Invalid expense field accepted");}
+var oldExpenseLedger=(JsonObject)source.DeepClone();oldExpenseLedger.Remove("businessExpenses");Check(LedgerValidator.Validate(oldExpenseLedger)["businessExpenses"]!.AsArray().Count==0,"Legacy ledger rejected");
 var guardOld=(JsonObject)source.DeepClone();var guardP=(JsonObject)source["products"]![0]!.DeepClone();guardP["id"]="guarded";guardP["reserved"]=1;guardP["openingSold"]=0;guardOld["products"]!.AsArray().Add(guardP);
 var guardNew=(JsonObject)guardOld.DeepClone();guardNew["products"]!.AsArray().RemoveAt(guardNew["products"]!.AsArray().Count-1);
 try{LedgerValidator.ValidateChanges(guardOld,guardNew);throw new Exception("Reserved deletion accepted");}catch(ArgumentException){checks++;}

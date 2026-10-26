@@ -1,5 +1,9 @@
 # Start here: future chat handoff
 
+## Miscellaneous expenses — current work
+
+Added standalone Expenses CRUD, profit integration, quarterly filtering, dedicated CSV fields, and matching Python/C# validation with backward-compatible optional businessExpenses JSON. Owner authorized documentation, commit, push, and publication when complete. Validation passed: 9 Python tests, 67 C# checks, expense CRUD/quarterly CSV/full-backup desktop/mobile checks, sale-maintenance regressions, financial calculations, cloud navigation, and lazy-photo preservation. Deployment is pending. Existing PKCS dependency advisories remain documented separately. Preserve business data and do not import old snapshots.
+
 ## October 26, 2026 release
 
 Implemented sale editing, automatic .99 tax-inclusive sale defaults, and confirmed deletion of unused inventory, with matching Python/C# protections. The owner tested the local changes, confirmed they look good, and authorized committing, pushing, and deploying on October 26. Feature commit `124e575` is pushed to origin/master and deployed to the existing Azure site. Live index.html/app.js/style.css match staging; health returns 200 and anonymous state (metadata/full backup), photo, and account requests return 401. No schema, infrastructure, or business-record changes were performed during deployment.
