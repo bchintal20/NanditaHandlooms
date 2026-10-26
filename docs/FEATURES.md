@@ -4,7 +4,7 @@ For exact calculations and owner decisions, use [Requirements](REQUIREMENTS.md).
 
 ## Overview
 
-Shows inventory quantities/value, sales revenue excluding collected tax, product gross profit, net tax held, recent sales, and pricing/shipment guidance. Shipping income and actual postage affect profit after expenses. Missing postage and unresolved historical sales are surfaced for review. The overview does not download inventory photos in hosted mode.
+Top cards show sales revenue excluding tax, gross product profit before expenses, profit after selling/shipping/miscellaneous expenses, and net tax held. Inventory quantity/value appears in the pricing panel. Profit after expenses flags missing postage as incomplete. Recent sales and pricing/shipment guidance remain visible. Shipping income and actual postage affect profit after expenses. Missing postage and unresolved historical sales are surfaced for review. The overview does not download inventory photos in hosted mode.
 
 ## Inventory and purchasing
 

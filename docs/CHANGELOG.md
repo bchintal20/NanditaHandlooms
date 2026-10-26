@@ -77,3 +77,7 @@ Sale-preview cleanup is deployed to Azure; desktop/mobile checks and live asset/
 ## October 26, 2026 — miscellaneous expenses
 
 Added standalone event/vendor and other overhead expense records, add/edit/delete, all-time and quarter profit impact, and expense CSV exports. Both hosts validate the optional JSON array; no schema migration. Passed 9 Python tests, 67 C# checks, desktop/mobile expense add/edit/reload/delete and quarterly CSV/full backup, sale-maintenance and financial regressions, staged cloud navigation, and lazy-photo preservation. Feature commit `79e8438` was pushed and deployed with the existing code-only script. Live assets matched staging; health returned 200 and anonymous state/backup/photo/account calls returned 401. No business records were created by tests or deployment; authenticated cloud feature acceptance remains an owner check. Existing dependency advisories and old CLI runtime-schema warning persisted without preventing publication.
+
+## October 26, 2026 — Overview profit clarity
+
+Promoted profit after all entered expenses to an Overview card and clarified that gross profit excludes expenses. Inventory value/quantity remains in the pricing panel; missing-postage warning remains visible. Calculations and business records are unchanged. Release checks pending.

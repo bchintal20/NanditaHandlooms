@@ -1,5 +1,9 @@
 # Start here: future chat handoff
 
+## Overview profit clarification — October 26, 2026
+
+Added a prominent Profit after expenses card alongside Gross profit, with explicit before/after-expense captions. Inventory value/quantity moves into the pricing panel. Calculations are unchanged. Desktop/mobile expense regression now verifies both displayed figures after recording overhead. Release verification pending.
+
 ## Miscellaneous expenses — deployed October 26, 2026
 
 Added standalone Expenses CRUD, profit integration, quarterly filtering, dedicated CSV fields, and matching Python/C# validation with backward-compatible optional businessExpenses JSON. Owner authorized documentation, commit, push, and publication when complete. Validation passed: 9 Python tests, 67 C# checks, expense CRUD/quarterly CSV/full-backup desktop/mobile checks, sale-maintenance regressions, financial calculations, cloud navigation, and lazy-photo preservation. Feature commit `79e8438` is pushed and deployed. Live HTML/JavaScript/CSS match staging; health returns 200 and anonymous metadata/full-backup/photo/account requests return 401. No schema/infrastructure migration or business-record writes were performed. Authenticated owner feature acceptance remains to be checked. Existing PKCS dependency advisories and the known CLI runtime-schema warning remain documented separately; publication succeeded. Preserve business data and do not import old snapshots.
