@@ -2,7 +2,7 @@
 
 ## Overview profit clarification — October 26, 2026
 
-Added a prominent Profit after expenses card alongside Gross profit, with explicit before/after-expense captions. Inventory value/quantity moves into the pricing panel. Calculations are unchanged. Desktop/mobile expense regression now verifies both displayed figures after recording overhead. Release verification pending.
+Added a prominent Profit after expenses card alongside Gross profit, with explicit before/after-expense captions. Inventory value/quantity moves into the pricing panel. Calculations are unchanged. Desktop/mobile expense regression now verifies both displayed figures after recording overhead. Committed as `4656a57`, pushed, and deployed with explicit owner approval. Desktop/mobile expense and staged cloud navigation checks passed. Live HTML/JavaScript/CSS match staging; health returns 200 and anonymous state/backup/photo/account requests return 401. No business records were changed. Existing dependency/CLI warnings remain documented below.
 
 ## Miscellaneous expenses — deployed October 26, 2026
 

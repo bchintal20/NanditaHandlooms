@@ -80,4 +80,4 @@ Added standalone event/vendor and other overhead expense records, add/edit/delet
 
 ## October 26, 2026 — Overview profit clarity
 
-Promoted profit after all entered expenses to an Overview card and clarified that gross profit excludes expenses. Inventory value/quantity remains in the pricing panel; missing-postage warning remains visible. Calculations and business records are unchanged. Release checks pending.
+Promoted profit after all entered expenses to an Overview card and clarified that gross profit excludes expenses. Inventory value/quantity remains in the pricing panel; missing-postage warning remains visible. Calculations and business records are unchanged. Desktop/mobile expense and cloud navigation checks passed. Commit `4656a57` pushed and deployed; live assets match staging, health 200, and anonymous state/backup/photo/account access 401. No business records changed; existing dependency/CLI warnings persist.
