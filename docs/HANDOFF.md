@@ -2,11 +2,13 @@
 
 ## October 26, 2026 release
 
-Implemented sale editing, automatic .99 tax-inclusive sale defaults, and confirmed deletion of unused inventory, with matching Python/C# protections. The owner tested the local changes, confirmed they look good, and authorized committing, pushing, and deploying on October 26. Release execution is in progress; update this status with deployment evidence when complete.
+Implemented sale editing, automatic .99 tax-inclusive sale defaults, and confirmed deletion of unused inventory, with matching Python/C# protections. The owner tested the local changes, confirmed they look good, and authorized committing, pushing, and deploying on October 26. Feature commit `124e575` is pushed to origin/master and deployed to the existing Azure site. Live index.html/app.js/style.css match staging; health returns 200 and anonymous state (metadata/full backup), photo, and account requests return 401. No schema, infrastructure, or business-record changes were performed during deployment.
 
 New sales split the rounded label total into product revenue/tax; existing sale edits preserve actual amounts. Fully refunded sales keep batch/color/quantity fixed, with amount corrections affecting derived refunds. Inventory deletion is blocked by sales, historical references/opening sold quantity, and reservations. Shared-shipment deletion can reallocate costs. Details are in Requirements, Features, and Architecture.
 
-Verification: synthetic sale-maintenance browser checks passed at desktop and phone widths; existing variant/photo/oversell checks passed; Python suite passed 8 tests; C# ledger suite passed 55 checks. These tests use isolated data and do not modify active business records. Use Operations for local testing. Local owner acceptance is confirmed. Cloud deployment verification remains pending.
+Verification: synthetic sale-maintenance browser checks passed at desktop and phone widths; existing variant/photo/oversell checks passed; Python suite passed 8 tests; C# ledger suite passed 55 checks. These tests use isolated data and do not modify active business records. Use Operations for local testing. Local owner acceptance and code deployment checks are confirmed. An authenticated owner walkthrough of the new cloud features remains to be done; no fake production sales were created.
+
+Build maintenance note: restore/publish reported NU1902 and NU1903 advisories for existing `System.Security.Cryptography.Pkcs` 9.0.18 (GHSA-2fmv-rv2c-59x7 and GHSA-846f-f764-76mx). Review and update the dependency in a separate tested maintenance change. The known old SWA CLI .NET 10 schema warning also appeared; upload and live checks succeeded.
 
 ## Deployed baseline
 
